@@ -1,0 +1,62 @@
+export const DEMO_TASK = {
+  repo: 'AryaShrestha05/shipIt-demo',
+  branch: 'main',
+  prompt: 'Add email format validation to the signup form and return 400 with a clear error if invalid.',
+};
+
+export const TIMELINE = [
+  { t: 0,     phase: 'plan',   kind: 'phase', text: 'Planner online' },
+  { t: 200,   phase: 'plan',   kind: 'log',   level: 'info', text: 'Cloning AryaShrestha05/shipIt-demo @ main…' },
+  { t: 900,   phase: 'plan',   kind: 'log',   level: 'ok',   text: 'Clone complete · 1 commit · 47 files' },
+  { t: 1200,  phase: 'plan',   kind: 'tool',  name: 'list_files', arg: 'src/routes', out: '[file] signup.js\n[file] login.js\n[file] index.js' },
+  { t: 1900,  phase: 'plan',   kind: 'tool',  name: 'read_file',  arg: 'src/routes/signup.js', out: "router.post('/signup', (req, res) => {\n  const { email, password } = req.body;\n  users.push({ email, password });\n  res.status(201).json({ ok: true });\n});" },
+  { t: 2700,  phase: 'plan',   kind: 'log',   level: 'info', text: 'Drafting plan…' },
+  { t: 3200,  phase: 'plan',   kind: 'log',   level: 'plan', text: 'Plan:\n  1. Add isValidEmail(email) helper\n  2. Reject with 400 + message when invalid\n  3. Add test case for malformed email' },
+
+  { t: 3800,  phase: 'code',   kind: 'phase', text: 'Coder online' },
+  { t: 4200,  phase: 'code',   kind: 'tool',  name: 'write_file', arg: 'src/routes/signup.js', out: 'patch applied · +11 / −2' },
+  { t: 4500,  phase: 'code',   kind: 'diff',  file: 'src/routes/signup.js',
+    hunks: [
+      { kind: 'ctx', line: "router.post('/signup', (req, res) => {" },
+      { kind: 'ctx', line: '  const { email, password } = req.body;' },
+      { kind: 'add', line: '  if (!isValidEmail(email)) {' },
+      { kind: 'add', line: "    return res.status(400).json({ error: 'Invalid email format' });" },
+      { kind: 'add', line: '  }' },
+      { kind: 'ctx', line: '  users.push({ email, password });' },
+      { kind: 'ctx', line: '  res.status(201).json({ ok: true });' },
+      { kind: 'ctx', line: '});' },
+    ] },
+  { t: 5300,  phase: 'code',   kind: 'tool',  name: 'write_file', arg: 'src/lib/validate.js', out: 'new file · 6 lines' },
+  { t: 5700,  phase: 'code',   kind: 'tool',  name: 'write_file', arg: 'test/signup.test.js', out: 'patch applied · +14 / −0' },
+
+  { t: 6300,  phase: 'verify', kind: 'phase', text: 'Verifier online' },
+  { t: 6600,  phase: 'verify', kind: 'log',   level: 'info', text: '$ npm test' },
+  { t: 7800,  phase: 'verify', kind: 'test',  name: 'POST /signup → 201 on valid email', status: 'pass', ms: 12 },
+  { t: 8100,  phase: 'verify', kind: 'test',  name: 'POST /signup → 400 on missing email', status: 'pass', ms: 8 },
+  { t: 8400,  phase: 'verify', kind: 'test',  name: 'POST /signup → 400 on malformed email', status: 'fail', ms: 6,
+    err: 'Expected status 400, got 201\n  at Object.<anonymous> (test/signup.test.js:24:14)' },
+
+  { t: 9000,  phase: 'critic', kind: 'phase', text: 'Critic online' },
+  { t: 9200,  phase: 'critic', kind: 'log',   level: 'warn', text: '1 test failed — entering evidence-first debug loop' },
+  { t: 9600,  phase: 'critic', kind: 'log',   level: 'info', text: "Hypothesis: isValidEmail() rejects 'bad@' but permits 'bad@host' — regex missing TLD" },
+  { t: 10200, phase: 'critic', kind: 'tool',  name: 'read_file', arg: 'src/lib/validate.js', out: 'const re = /^[^\\s@]+@[^\\s@]+$/;\nexports.isValidEmail = (s) => re.test(s);' },
+  { t: 10900, phase: 'critic', kind: 'log',   level: 'info', text: 'Confirmed. Patching regex to require TLD.' },
+  { t: 11300, phase: 'critic', kind: 'tool',  name: 'write_file', arg: 'src/lib/validate.js', out: 'patch applied · +1 / −1' },
+  { t: 11700, phase: 'critic', kind: 'diff',  file: 'src/lib/validate.js',
+    hunks: [
+      { kind: 'del', line: 'const re = /^[^\\s@]+@[^\\s@]+$/;' },
+      { kind: 'add', line: 'const re = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;' },
+      { kind: 'ctx', line: 'exports.isValidEmail = (s) => re.test(s);' },
+    ] },
+  { t: 12300, phase: 'critic', kind: 'log',   level: 'info', text: '$ npm test (retry 1/3)' },
+  { t: 13400, phase: 'critic', kind: 'test',  name: 'POST /signup → 400 on malformed email', status: 'pass', ms: 7 },
+  { t: 13700, phase: 'critic', kind: 'log',   level: 'ok',   text: 'All 14 tests pass · evidence cleared' },
+
+  { t: 14200, phase: 'ship',   kind: 'phase', text: 'Shipping' },
+  { t: 14500, phase: 'ship',   kind: 'log',   level: 'info', text: 'git checkout -b shipit/validate-signup-email' },
+  { t: 14900, phase: 'ship',   kind: 'log',   level: 'info', text: "git commit -m 'validate: reject malformed signup emails'" },
+  { t: 15300, phase: 'ship',   kind: 'log',   level: 'info', text: 'git push origin shipit/validate-signup-email' },
+  { t: 15800, phase: 'ship',   kind: 'pr',    number: 42, title: 'validate: reject malformed signup emails',
+    url: 'github.com/AryaShrestha05/shipIt-demo/pull/42',
+    stats: { files: 3, additions: 26, deletions: 3, retries: 1, duration: '15.8s' } },
+];
