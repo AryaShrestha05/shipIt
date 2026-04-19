@@ -1,60 +1,51 @@
+// Local tester: runs the agent on the sandbox folder and logs every step.
+// This is NOT the Express server. Run directly with `node src/test-tool.js`
+// to try things without a frontend.
 require('dotenv').config();
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const fs = require('fs');
 const path = require('path');
+const util = require('util');
+
+const { toolDeclarations, createToolRunner } = require('./agent/tools');
+const { createModel } = require('./agent/gemini');
+const { runAgent } = require('./agent/loop');
 
 const SANDBOX = path.join(__dirname, '..', 'sandbox');
 
-// 1. Define the tool — describes what it does to Gemini
-const readFileTool = {
-  name: 'read_file',
-  description: 'Reads the contents of a file from the repository.',
-  parameters: {
-    type: 'object',
-    properties: {
-      file_path: {
-        type: 'string',
-        description: 'Path to the file, relative to the repo root (e.g. "app.js")',
-      },
-    },
-    required: ['file_path'],
-  },
-};
-
-// 2. The actual function that runs when Gemini calls the tool
-function readFile(args) {
-  const fullPath = path.join(SANDBOX, args.file_path);
-  return fs.readFileSync(fullPath, 'utf8');
+function show(label, obj) {
+  console.log(`\n${'═'.repeat(60)}`);
+  console.log(`🔍 ${label}`);
+  console.log('═'.repeat(60));
+  console.log(util.inspect(obj, { depth: 4, colors: true, maxStringLength: 200 }));
 }
 
-async function runAgent() {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash-lite',
-    tools: [{ functionDeclarations: [readFileTool] }],
+// Turn structured agent events into pretty console output
+function logEvent(event) {
+  if (event.type === 'user_prompt') {
+    show('USER PROMPT', event.content);
+  } else if (event.type === 'tool_call') {
+    show(`Step ${event.step} — CALL ${event.name}`, event.args);
+  } else if (event.type === 'tool_result') {
+    show(`Step ${event.step} — RESULT`, event.output);
+  } else if (event.type === 'done') {
+    show('AGENT DONE — final answer', event.text);
+  }
+}
+
+async function main() {
+  const model = createModel({
+    apiKey: process.env.GEMINI_API_KEY,
+    tools: toolDeclarations,
   });
 
-  const chat = model.startChat();
-  const userPrompt = 'What does the main function in app.js do? Read the file first.';
-  console.log('USER:', userPrompt);
+  const runTool = createToolRunner(SANDBOX);
 
-  // Send the initial prompt
-  let result = await chat.sendMessage(userPrompt);
-  let call = result.response.functionCalls()?.[0];
-
-  // Loop while Gemini wants to call tools
-  while (call) {
-    console.log('\nAGENT wants to call:', call.name, call.args);
-    const toolOutput = readFile(call.args);
-    console.log('TOOL returned:', toolOutput.slice(0, 80) + '...');
-
-    result = await chat.sendMessage([
-      { functionResponse: { name: call.name, response: { content: toolOutput } } },
-    ]);
-    call = result.response.functionCalls()?.[0];
-  }
-
-  console.log('\nAGENT final answer:', result.response.text());
+  await runAgent({
+    model,
+    prompt:
+      'In app.js, change main() so it greets two users: "Arya" and "Sam". Then run the file with "node app.js" to verify it works. If it fails, fix it and re-run.',
+    runTool,
+    onEvent: logEvent,
+  });
 }
 
-runAgent().catch(err => console.error('Error:', err.message));
+main().catch(err => console.error('Error:', err.message));
