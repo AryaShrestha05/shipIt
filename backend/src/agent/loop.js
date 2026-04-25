@@ -4,7 +4,7 @@
 //   model    — a Gemini model (from gemini.js)
 //   prompt   — the user's task description
 //   runTool  — function that actually executes tool calls (from tools.js)
-//   onEvent  — optional callback, called on every step (prompt, tool_call,
+//   onEvent  — lck, called on every step (prompt, tool_call,
 //              tool_result, done). Used to log to console during dev, or to
 //              stream live updates to the browser later.
 async function runAgent({ model, prompt, runTool, onEvent = () => {} }) {
@@ -25,6 +25,8 @@ async function runAgent({ model, prompt, runTool, onEvent = () => {} }) {
     result = await chat.sendMessage([
       { functionResponse: { name: call.name, response: { content: toolOutput } } },
     ]);
+    //gemini returns an array of the tools that it wants to run, or nothing,
+    //if the array is nothing, app crashes. ?.[0] prevents that and returns undefined.
     call = result.response.functionCalls()?.[0];
     step++;
   }
