@@ -25,7 +25,7 @@ router.post('/run', async (req, res) => {
   };
 
   try {
-    await runOnce({ prompt, onEvent: send });
+    await runOnce(prompt, send);
   } catch (err) {
     send({ type: 'error', message: err.message });
   } finally {

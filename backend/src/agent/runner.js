@@ -8,13 +8,13 @@ const { runAgent } = require('./loop');
 // Block 2 will swap this for a fresh git clone per run.
 const SANDBOX = path.join(__dirname, '..', '..', 'sandbox');
 
-async function runOnce({ prompt, onEvent }) {
+async function runOnce(prompt, onEvent) {
   const model = createModel({
     apiKey: process.env.GEMINI_API_KEY,
     tools: toolDeclarations,
   });
   const runTool = createToolRunner(SANDBOX);
-  return runAgent({ model, prompt, runTool, onEvent });
+  return runAgent(model, prompt, runTool, onEvent);
 }
 
 module.exports = { runOnce };

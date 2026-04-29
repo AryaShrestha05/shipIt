@@ -7,7 +7,7 @@
 //   onEvent  — lck, called on every step (prompt, tool_call,
 //              tool_result, done). Used to log to console during dev, or to
 //              stream live updates to the browser later.
-async function runAgent({ model, prompt, runTool, onEvent = () => {} }) {
+async function runAgent(model, prompt, runTool, onEvent = () => {}) {
   const chat = model.startChat();
 
   onEvent({ type: 'user_prompt', content: prompt });
