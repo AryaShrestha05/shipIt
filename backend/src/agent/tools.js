@@ -70,7 +70,7 @@ function createToolRunner(rootPath) {
     }
   }
 
-  return function runTool(call) {
+  return function (call) {
     if (call.name === 'read_file') return readFile(call.args);
     if (call.name === 'write_file') return writeFile(call.args);
     if (call.name === 'run_command') return runCommand(call.args);
