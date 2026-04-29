@@ -3,7 +3,7 @@ function greet(name) {
 }
 
 function main() {
-  const user = 'Arya';
+  const user = 'kritika';
   console.log(greet(user));
   const secondUser = 'Sam';
   console.log(greet(secondUser));

@@ -1,7 +1,7 @@
 export const DEMO_TASK = {
   repo: 'AryaShrestha05/shipIt-demo',
   branch: 'main',
-  prompt: 'Add email format validation to the signup form and return 400 with a clear error if invalid.',
+  prompt: 'Add a farewell(name) function to app.js that returns "Goodbye, <name>!" and call it from main(). Then run "node app.js" to verify it works.',
 };
 
 export const TIMELINE = [
