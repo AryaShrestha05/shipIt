@@ -13,7 +13,6 @@ const path = require('path');
 //     business.copy; anything missing uses DEFAULT_COPY.
 
 const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
-const TEMPLATE_IDS = ['hearth', 'atelier'];
 
 // Neutral wording that fits any small business, used when business.copy
 // doesn't say otherwise.
@@ -25,6 +24,7 @@ const DEFAULT_COPY = {
   itemsEyebrow: 'What we do',
   itemsTitle: 'What we offer',
   itemsSub: 'Everything we make, in one place.',
+  closingTitle: "We'd love to see you.",
   highlightLabel: 'Open',
   highlightNote: 'Stop by and say hello.',
   quote: 'We do one thing, and we do it with care.',
@@ -52,23 +52,28 @@ function replaceAll(text, values) {
   return result;
 }
 
+// A page can have several item lists (e.g. a menu and a scrolling marquee),
+// so keep filling <!--items--> blocks until none are left.
 function fillItems(html, items) {
-  const start = html.indexOf('<!--items-->');
-  const end = html.indexOf('<!--/items-->');
-  if (start === -1 || end === -1) return html;
+  let result = html;
+  for (;;) {
+    const start = result.indexOf('<!--items-->');
+    const end = result.indexOf('<!--/items-->', start);
+    if (start === -1 || end === -1) return result;
 
-  const row = html.slice(start + '<!--items-->'.length, end);
-  let rows = '';
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    rows += replaceAll(row, {
-      'item.name': item.name,
-      'item.price': item.price,
-      'item.note': item.note,
-      i: i,
-    });
+    const row = result.slice(start + '<!--items-->'.length, end);
+    let rows = '';
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      rows += replaceAll(row, {
+        'item.name': item.name,
+        'item.price': item.price,
+        'item.note': item.note,
+        i: i,
+      });
+    }
+    result = result.slice(0, start) + rows + result.slice(end + '<!--/items-->'.length);
   }
-  return html.slice(0, start) + rows + html.slice(end + '<!--/items-->'.length);
 }
 
 function fillTemplate(html, business) {
@@ -93,16 +98,9 @@ function fillTemplate(html, business) {
   });
 }
 
-function pickTemplate(business) {
-  if (business.vibe === 'minimal') return 'atelier';
-  return 'hearth';
-}
-
 module.exports = {
   TEMPLATES_DIR: TEMPLATES_DIR,
-  TEMPLATE_IDS: TEMPLATE_IDS,
   DEFAULT_COPY: DEFAULT_COPY,
   escapeHtml: escapeHtml,
   fillTemplate: fillTemplate,
-  pickTemplate: pickTemplate,
 };

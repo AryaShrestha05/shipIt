@@ -28,6 +28,7 @@ const SAMPLE_BUSINESS = {
     highlightNote: 'Come early — the croissants go first.',
     quote: 'We start before sunrise so the whole street smells like butter by seven.',
     visitTitle: 'Visit the bakery',
+    closingTitle: 'Come hungry.',
     footerNote: "Baked by hand, sold until it's gone.",
   },
 };
@@ -57,6 +58,7 @@ const SAMPLE_SALON = {
     highlightNote: 'Weekend spots fill up fast — book early.',
     quote: 'Great hair should feel like you, just more rested.',
     visitTitle: 'Visit the studio',
+    closingTitle: 'Your chair is waiting.',
     footerNote: 'Thank you for trusting us with your hair.',
   },
 };

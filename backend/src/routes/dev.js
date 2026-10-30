@@ -1,33 +1,44 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const fill = require('../templates/fill');
+const compose = require('../templates/compose');
 const sample = require('../templates/sample');
 
 // Helper routes for the /dev test page only. They let us look at each
 // feature on its own before the real editor exists.
 const router = express.Router();
 
-// GET /api/dev/template/hearth/index.html — the template filled with Rosie's Bakery
-// GET /api/dev/template/hearth/index.html?sample=salon — filled with Studio Nova
-router.get('/dev/template/:id/index.html', function (req, res) {
-  const id = req.params.id;
-  if (!fill.TEMPLATE_IDS.includes(id)) return res.status(404).send('Unknown template');
+function sampleFor(req) {
+  if (req.query.sample === 'salon') return sample.SAMPLE_SALON;
+  return sample.SAMPLE_BUSINESS;
+}
 
-  let business = sample.SAMPLE_BUSINESS;
-  if (req.query.sample === 'salon') business = sample.SAMPLE_SALON;
+// GET /api/dev/sections — every theme and section variant we have
+router.get('/dev/sections', function (req, res) {
+  res.json({ themes: Object.keys(compose.THEMES), sections: compose.SECTION_IDS });
+});
 
-  const file = path.join(fill.TEMPLATES_DIR, id, 'index.html');
-  const html = fill.fillTemplate(fs.readFileSync(file, 'utf8'), business);
+// GET /api/dev/layout?sample=salon — the layout ShipIt would pick on its own
+router.get('/dev/layout', function (req, res) {
+  res.json(compose.pickLayout(sampleFor(req)));
+});
+
+// GET /api/dev/site/noir/index.html?sample=salon&sections=hero-giant,items-list
+// A composed site. Without ?sections it uses the automatic layout's sections.
+router.get('/dev/site/:theme/index.html', function (req, res) {
+  const business = sampleFor(req);
+  let sections = compose.pickLayout(business).sections;
+  if (req.query.sections) sections = String(req.query.sections).split(',');
+
+  const html = compose.composeSite({ theme: req.params.theme, sections: sections }, business);
   res.type('html').send(html);
 });
 
-// GET /api/dev/template/hearth/styles.css — the template's stylesheet as-is
-router.get('/dev/template/:id/styles.css', function (req, res) {
-  const id = req.params.id;
-  if (!fill.TEMPLATE_IDS.includes(id)) return res.status(404).send('Unknown template');
-
-  res.sendFile(path.join(fill.TEMPLATES_DIR, id, 'styles.css'));
+// GET /api/dev/site/noir/theme.css (also base.css, effects.js)
+router.get('/dev/site/:theme/:file', function (req, res) {
+  const files = compose.siteFiles(req.params.theme);
+  for (const file of files) {
+    if (file.to === req.params.file) return res.sendFile(file.from);
+  }
+  res.status(404).send('Not found');
 });
 
 module.exports = { router: router };

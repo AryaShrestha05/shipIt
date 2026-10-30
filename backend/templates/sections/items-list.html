@@ -1,0 +1,11 @@
+<section class="section items items-list" id="items" data-reveal>
+  <div class="section-head section-head-split">
+    <h2 class="display h2" data-sid="items-title">{{itemsTitle}}</h2>
+    <p class="muted" data-sid="items-sub">{{itemsSub}}</p>
+  </div>
+  <ol class="list"><!--items--><li class="list-row" data-sid="item-{{i}}">
+      <span class="list-name">{{item.name}}</span>
+      <span class="list-note muted">{{item.note}}</span>
+      <span class="price">{{item.price}}</span>
+    </li><!--/items--></ol>
+</section>

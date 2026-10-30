@@ -144,6 +144,10 @@ Template rules: slots are `{{name}}`, `{{tagline}}`, `{{hours}}`, `{{address}}`,
 - [ ] **Step 4: Run** → PASS. Then open both filled templates in a browser at 1440px and 390px and check they look premium.
 - [ ] **Step 5: Commit** `feat(templates): hearth and atelier templates with deterministic fill`.
 
+### Task 3 amendment (done)
+
+Sites are composed from sections: `backend/templates/{base.html, base.css, effects.js, themes/*.css, sections/*.html}` and `backend/src/templates/compose.js` (`THEMES`, `SECTION_IDS`, `composeSite`, `pickLayout`, `siteFiles`). Whole templates `hearth/` and `atelier/` are gone; `hearth`, `atelier`, `noir` are now themes. The planted dead link is the nav's `data-sid="cta-order" href="#order"`. QA must load pages with `reducedMotion: 'reduce'` so scroll-reveal content is visible in screenshots.
+
 ### Task 4: Workspaces and preview serving
 
 **Files:**
@@ -166,7 +170,7 @@ Template rules: slots are `{{name}}`, `{{tagline}}`, `{{hours}}`, `{{address}}`,
 - Test: `backend/test/extract.test.js`, `backend/test/recorder.test.js`, `backend/test/build.test.js`
 
 **Interfaces:**
-- Consumes: `createModel`, `withRetry` (Task 2); `fillTemplate`, `pickTemplate` (Task 3); workspace fns (Task 4).
+- Consumes: `createModel`, `withRetry` (Task 2); `compose.pickLayout(business)`, `compose.composeSite(layout, business)`, `compose.siteFiles(theme)` (Task 3 — sections amendment); workspace fns (Task 4). The build writes `index.html` + the three `siteFiles` into `v1` and saves `layout.json` next to them.
 - Produces:
   - `normalizeBusiness(raw: unknown) -> Business` (pure; defaults: name `"your bakery"`, tagline `""`, vibe `'warm'`, palette hearth defaults, items `[]`, prices kept as strings, max 8 items, hex colors validated).
   - `extractBusiness(model, { imageBase64, mimeType, sentence }) -> Promise<Business>` — asks for JSON only (`generationConfig.responseMimeType = 'application/json'`), then `normalizeBusiness`.

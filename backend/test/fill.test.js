@@ -1,9 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const fs = require('fs');
-const path = require('path');
 const fill = require('../src/templates/fill');
-const sample = require('../src/templates/sample');
 
 const TEMPLATE = [
   '<style>:root{--bg:{{bg}};--ink:{{ink}};--accent:{{accent}}}</style>',
@@ -53,6 +50,11 @@ test('escapes HTML in business fields', () => {
   assert.ok(!html.includes('<script>'));
 });
 
+test('fills every item list on the page', () => {
+  const html = fill.fillTemplate('<!--items-->[{{item.name}}]<!--/items--> <!--items-->({{i}})<!--/items-->', business(THREE_ITEMS));
+  assert.strictEqual(html, '[Croissant][Sourdough][Cookie] (0)(1)(2)');
+});
+
 test('zero items leaves the menu empty without crashing', () => {
   const html = fill.fillTemplate(TEMPLATE, business([]));
   assert.ok(html.includes('<ul></ul>'));
@@ -69,39 +71,4 @@ test('missing wording falls back to neutral defaults', () => {
   const html = fill.fillTemplate('<h2>{{itemsTitle}}</h2><a>{{ctaLabel}}</a>', business([]));
   assert.ok(!html.includes('{{'));
   assert.strictEqual(html, '<h2>' + fill.DEFAULT_COPY.itemsTitle + '</h2><a>' + fill.DEFAULT_COPY.ctaLabel + '</a>');
-});
-
-for (const id of ['hearth', 'atelier']) {
-  test('"' + id + '" filled for a salon has no bakery words left', () => {
-    const file = path.join(fill.TEMPLATES_DIR, id, 'index.html');
-    const html = fill.fillTemplate(fs.readFileSync(file, 'utf8'), sample.SAMPLE_SALON).toLowerCase();
-    for (const word of ['bak', 'oven', 'croissant', 'flour', 'butter', 'the menu']) {
-      assert.ok(!html.includes(word), 'found "' + word + '"');
-    }
-    assert.ok(html.includes('balayage'));
-  });
-}
-
-test('pickTemplate chooses atelier for a minimal vibe and hearth otherwise', () => {
-  assert.strictEqual(fill.pickTemplate({ vibe: 'minimal' }), 'atelier');
-  assert.strictEqual(fill.pickTemplate({ vibe: 'warm' }), 'hearth');
-  assert.strictEqual(fill.pickTemplate({}), 'hearth');
-});
-
-for (const id of fill.TEMPLATE_IDS) {
-  test('real template "' + id + '" fills cleanly with unique data-sids', () => {
-    const file = path.join(fill.TEMPLATES_DIR, id, 'index.html');
-    const html = fill.fillTemplate(fs.readFileSync(file, 'utf8'), sample.SAMPLE_BUSINESS);
-    assert.ok(!html.includes('{{'), 'leftover placeholder');
-    const sids = (html.match(/data-sid="([^"]+)"/g) || []);
-    assert.ok(sids.length >= 10, 'expected at least 10 editable elements');
-    assert.strictEqual(new Set(sids).size, sids.length, 'duplicate data-sid');
-    assert.ok(fs.existsSync(path.join(fill.TEMPLATES_DIR, id, 'styles.css')));
-  });
-}
-
-test('hearth ships with the dead "order ahead" link QA is meant to find', () => {
-  const html = fs.readFileSync(path.join(fill.TEMPLATES_DIR, 'hearth', 'index.html'), 'utf8');
-  assert.ok(html.includes('href="#order"'));
-  assert.ok(!html.includes('id="order"'));
 });

@@ -1,0 +1,13 @@
+/* atelier — minimal and structural. Light paper, tight bold grotesk. */
+:root {
+  --paper: color-mix(in srgb, var(--bg) 35%, #fbfaf8);
+  --surface: #ffffff;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-accent: 'Instrument Serif', Georgia, serif;
+  --display-weight: 600;
+  --display-tracking: -0.055em;
+  --radius: 32px;
+  --grain: 0;
+}
+.quote, .price, .hero-card-big, .ticket-hours { font-weight: 400; }

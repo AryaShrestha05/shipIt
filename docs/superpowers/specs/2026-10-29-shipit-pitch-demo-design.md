@@ -82,3 +82,13 @@ Exact template designs, animation details, component structure, event names on t
 3. 2–3 templates.
 4. Recorded backup video of the full flow.
 5. (Optional) Electron wrap.
+
+## Amendment (2026-10-29): section components instead of whole templates
+
+User asked for "a lot of variety" that never looks like AI slop. Sites are now **composed from hand-built sections**, not picked from whole templates.
+
+- **Themes** (fonts, colors, radii, texture only): `hearth` (warm serif), `atelier` (minimal grotesk), `noir` (dark, bold, qtzx-like).
+- **Sections** with variants, all styled only through theme tokens so any mix matches: hero (split / giant / centered), marquee, items (cards / list / tilt), highlight (ticket / band), story (quote / split), visit (card / columns), cta, plus shared nav and footer.
+- A **layout** = `{ theme, sections: ['hero-split', 'marquee', ...] }`. A default layout is picked deterministically per business (same business → same site; different businesses → different sites). The AI may suggest a layout later.
+- **Effects** inspired by React Bits (split-letter reveal, blur-in, marquee, cursor spotlight, tilt, magnetic buttons) are **written from scratch** in plain JS/CSS — React Bits' license forbids redistributing its components, and generated sites are plain HTML. All effects switch off under `prefers-reduced-motion` and content is visible without JS (so QA screenshots are complete).
+- The planted QA defect (nav button → `#order`, no such section) lives in the shared nav so it exists in every layout.

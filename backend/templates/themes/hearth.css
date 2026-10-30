@@ -1,0 +1,11 @@
+/* hearth — warm, editorial. Cream paper, high-contrast serif. */
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-accent: 'Fraunces', Georgia, serif;
+  --display-weight: 400;
+  --display-tracking: -0.035em;
+  --radius: 28px;
+  --grain: 0.05;
+}
+.display { font-variation-settings: 'opsz' 144; }
