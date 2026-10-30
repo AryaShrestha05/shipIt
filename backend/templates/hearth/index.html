@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{name}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..500&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>:root{--bg:{{bg}};--ink:{{ink}};--accent:{{accent}}}</style>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <a class="nav-brand" data-sid="nav-brand" href="#top">{{name}}</a>
+    <div class="nav-links">
+      <a data-sid="nav-menu" href="#menu">Menu</a>
+      <a data-sid="nav-visit" href="#visit">Visit</a>
+    </div>
+    <a class="pill pill-dark" data-sid="cta-order" href="#order">
+      Order ahead <span class="pill-icon" aria-hidden="true">↗</span>
+    </a>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="hero-copy">
+      <span class="eyebrow" data-sid="hero-eyebrow">Fresh every morning</span>
+      <h1 class="hero-title" data-sid="hero-title">{{name}}</h1>
+      <p class="hero-tagline" data-sid="hero-tagline">{{tagline}}</p>
+      <a class="pill pill-accent" data-sid="hero-cta" href="#menu">
+        See today's bakes <span class="pill-icon" aria-hidden="true">↓</span>
+      </a>
+    </div>
+
+    <aside class="hero-ticket">
+      <div class="shell">
+        <div class="core ticket">
+          <span class="ticket-label" data-sid="ticket-label">Out of the oven</span>
+          <p class="ticket-time" data-sid="ticket-hours">{{hours}}</p>
+          <div class="ticket-rule"></div>
+          <p class="ticket-note" data-sid="ticket-note">Come early — the croissants go first.</p>
+        </div>
+      </div>
+    </aside>
+  </header>
+
+  <section class="menu" id="menu">
+    <div class="section-head">
+      <span class="eyebrow" data-sid="menu-eyebrow">The counter</span>
+      <h2 data-sid="menu-title">What we're baking</h2>
+    </div>
+    <ul class="menu-grid"><!--items--><li class="shell menu-item" data-sid="item-{{i}}">
+        <div class="core">
+          <div class="menu-row">
+            <h3>{{item.name}}</h3>
+            <span class="price">{{item.price}}</span>
+          </div>
+          <p>{{item.note}}</p>
+        </div>
+      </li><!--/items--></ul>
+  </section>
+
+  <section class="story">
+    <span class="eyebrow" data-sid="story-eyebrow">Our story</span>
+    <p class="story-quote" data-sid="story-quote">“We start before sunrise so the whole street smells like butter by seven.”</p>
+  </section>
+
+  <section class="visit" id="visit">
+    <div class="shell">
+      <div class="core visit-card">
+        <div>
+          <span class="eyebrow" data-sid="visit-eyebrow">Come by</span>
+          <h2 data-sid="visit-title">Visit the bakery</h2>
+        </div>
+        <dl class="visit-details">
+          <div>
+            <dt>Hours</dt>
+            <dd data-sid="hours">{{hours}}</dd>
+          </div>
+          <div>
+            <dt>Address</dt>
+            <dd data-sid="address">{{address}}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span data-sid="footer-name">{{name}}</span>
+    <span data-sid="footer-note">Baked by hand, sold until it's gone.</span>
+  </footer>
+</body>
+</html>

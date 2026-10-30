@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{name}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>:root{--bg:{{bg}};--ink:{{ink}};--accent:{{accent}}}</style>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav-brand" data-sid="nav-brand" href="#top">{{name}}</a>
+    <div class="nav-links">
+      <a data-sid="nav-menu" href="#menu">Menu</a>
+      <a data-sid="nav-visit" href="#visit">Visit</a>
+    </div>
+    <a class="pill" data-sid="cta-order" href="#visit">
+      Find us <span class="pill-icon" aria-hidden="true">↗</span>
+    </a>
+  </nav>
+
+  <header class="hero" id="top">
+    <span class="eyebrow" data-sid="hero-eyebrow">Small batch · Baked daily</span>
+    <h1 class="hero-title" data-sid="hero-title">{{name}}</h1>
+    <div class="hero-foot">
+      <p class="hero-tagline" data-sid="hero-tagline">{{tagline}}</p>
+      <a class="pill pill-accent" data-sid="hero-cta" href="#menu">
+        View the menu <span class="pill-icon" aria-hidden="true">↓</span>
+      </a>
+    </div>
+  </header>
+
+  <section class="menu" id="menu">
+    <div class="menu-head">
+      <h2 data-sid="menu-title">The menu</h2>
+      <p class="menu-sub" data-sid="menu-sub">Made in the morning. Gone by the afternoon.</p>
+    </div>
+    <ol class="menu-list"><!--items--><li class="menu-item" data-sid="item-{{i}}">
+        <span class="menu-name">{{item.name}}</span>
+        <span class="menu-note">{{item.note}}</span>
+        <span class="menu-price">{{item.price}}</span>
+      </li><!--/items--></ol>
+  </section>
+
+  <section class="bento">
+    <div class="shell bento-big">
+      <div class="core">
+        <span class="eyebrow" data-sid="bento-eyebrow">Our craft</span>
+        <p class="bento-quote" data-sid="bento-quote">Flour, water, salt, time. <em>Mostly time.</em></p>
+      </div>
+    </div>
+    <div class="shell bento-small" id="visit">
+      <div class="core">
+        <span class="bento-label">Hours</span>
+        <p class="bento-value" data-sid="hours">{{hours}}</p>
+      </div>
+    </div>
+    <div class="shell bento-small">
+      <div class="core">
+        <span class="bento-label">Address</span>
+        <p class="bento-value" data-sid="address">{{address}}</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span data-sid="footer-name">{{name}}</span>
+    <span data-sid="footer-note">Thank you for buying local.</span>
+  </footer>
+</body>
+</html>
