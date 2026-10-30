@@ -8,10 +8,10 @@ import { aiHeaders } from './aiSettings';
 //
 // Resolves when the stream ends. A non-stream error (400, 401) comes back
 // as one { type: 'error' } event so callers handle every failure the same way.
-export async function postStream(url, body, onEvent) {
+export async function postStream(url, body, onEvent, signal) {
   const headers = aiHeaders();
   headers['Content-Type'] = 'application/json';
-  const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+  const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: signal });
 
   if (!res.ok) {
     let message = 'Request failed (' + res.status + ')';
@@ -33,14 +33,28 @@ export async function postStream(url, body, onEvent) {
     const chunk = await reader.read();
     if (chunk.done) break;
     buffer += decoder.decode(chunk.value, { stream: true });
+    const parsed = parseSseChunk(buffer);
+    buffer = parsed.rest;
+    for (const event of parsed.events) onEvent(event);
+  }
+}
 
-    // Events end with a blank line. Keep any half-received event in the buffer.
-    const parts = buffer.split('\n\n');
-    buffer = parts.pop();
-    for (const part of parts) {
-      if (part.startsWith('data: ')) onEvent(JSON.parse(part.slice(6)));
+// Text arrives in pieces that don't line up with events. Events end with a
+// blank line, so split on that; the last piece may be half an event, so it's
+// handed back as `rest` to be joined with the next piece.
+export function parseSseChunk(buffer) {
+  const parts = buffer.split('\n\n');
+  const rest = parts.pop();
+  const events = [];
+  for (const part of parts) {
+    if (!part.startsWith('data: ')) continue;
+    try {
+      events.push(JSON.parse(part.slice(6)));
+    } catch {
+      // a broken event is skipped rather than stopping the whole stream
     }
   }
+  return { events: events, rest: rest };
 }
 
 // Reads a File from an <input type="file"> as base64 text (without the
