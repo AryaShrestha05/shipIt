@@ -162,6 +162,19 @@ Sites are composed from sections: `backend/templates/{base.html, base.css, effec
 - [ ] **Step 2: Run** → FAIL. **Step 3: Implement** with `fs.cpSync(..., {recursive:true})`. **Step 4: Run** → PASS.
 - [ ] **Step 5: Commit** `feat(workspace): immutable per-run version folders served at /preview`.
 
+### Task 4b: Bring your own key — provider layer
+
+**Files:**
+- Create: `backend/src/ai/providers.js`, `backend/src/ai/geminiProvider.js`, `backend/src/ai/claudeProvider.js`, `backend/src/ai/openaiProvider.js`, `backend/src/ai/fromRequest.js`, `backend/src/routes/ai.js`
+- Modify: `backend/src/index.js`, `frontend/src/routes/Dev.jsx` (AI settings section)
+- Test: `backend/test/providers.test.js`, `backend/test/ai.test.js`
+
+**Interfaces:**
+- Produces: `providers.createAI({ provider, apiKey, model }, sdk?) -> ai` where `ai = { provider, model, canTranscribe, chatModel({ system, tools }) -> { startChat() -> { sendMessage(input) } }, extractJson({ system, prompt, imageBase64, mimeType, schema }) -> Promise<object>, transcribe({ audioBase64, mimeType }) -> Promise<string> }`. `chatModel` returns exactly the Gemini chat shape `loop.runAgent` already uses: `sendMessage(string | [{functionResponse}])` resolves to `{ response: { functionCalls() -> [{name, args}] | undefined, text() -> string } }`. Adapters map tool results back to calls by position.
+- `fromRequest.aiFromRequest(req) -> ai` reads `x-shipit-provider|key|model` headers, falls back to Gemini + `process.env.GEMINI_API_KEY`, throws `NoKeyError` if neither.
+- `POST /api/ai/check` → `{ ok: true, provider, model }` or `{ ok: false, error }` (one tiny call to test a key).
+- Task 5 (`extractBusiness`), Task 8 (`transcribe`) and Task 10 (`shipRun`) take an `ai` object instead of building Gemini models themselves.
+
 ### Task 5: Photo → site build endpoint (with recording)
 
 **Files:**

@@ -92,3 +92,13 @@ User asked for "a lot of variety" that never looks like AI slop. Sites are now *
 - A **layout** = `{ theme, sections: ['hero-split', 'marquee', ...] }`. A default layout is picked deterministically per business (same business → same site; different businesses → different sites). The AI may suggest a layout later.
 - **Effects** inspired by React Bits (split-letter reveal, blur-in, marquee, cursor spotlight, tilt, magnetic buttons) are **written from scratch** in plain JS/CSS — React Bits' license forbids redistributing its components, and generated sites are plain HTML. All effects switch off under `prefers-reduced-motion` and content is visible without JS (so QA screenshots are complete).
 - The planted QA defect (nav button → `#order`, no such section) lives in the shared nav so it exists in every layout.
+
+## Amendment (2026-10-29): bring your own key, any model
+
+User decision: **the app is free; users bring their own AI key; pro building blocks are the paid part.** Users pick the provider and model.
+
+- **Providers:** Gemini (default), OpenAI, Claude. One adapter file per provider behind a common interface, so the agent loop, photo reader and voice code never care which one runs.
+- **Keys:** entered by the user in a settings panel, kept in their browser (localStorage), sent with each request in headers (`x-shipit-provider`, `x-shipit-key`, `x-shipit-model`). The server uses the key for that request only — never saved, never logged. With no key sent, the server falls back to its own `GEMINI_API_KEY` (used for the stage demo).
+- **Voice:** Gemini and OpenAI can transcribe; Claude cannot take audio, so with a Claude key the pin falls back to typing (already the planned failure path), or a second key can be added later.
+- **Defaults:** Gemini `gemini-2.5-flash`; OpenAI `gpt-5.5` (transcription `gpt-4o-mini-transcribe`); Claude `claude-opus-5-5` at effort `medium` with server-side refusal fallbacks (`fallbacks: "default"`). Every model name is editable by the user.
+- **Pitch:** we pay nothing for AI, so the product scales without per-user cost; revenue comes from pro blocks.

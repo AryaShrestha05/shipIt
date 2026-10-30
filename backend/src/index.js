@@ -5,6 +5,7 @@ const cors = require('cors');
 const runRouter = require('./routes/run');
 const dev = require('./routes/dev');
 const blocks = require('./routes/blocks');
+const aiRoutes = require('./routes/ai');
 const workspace = require('./workspace/workspace');
 
 const app = express();
@@ -18,6 +19,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api', runRouter);
 app.use('/api', dev.router);
 app.use('/api', blocks.router);
+app.use('/api', aiRoutes.createAiRouter());
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Shipit backend running on port ${PORT}`));
