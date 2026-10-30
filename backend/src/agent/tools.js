@@ -45,12 +45,24 @@ const toolDeclarations = [
 // for testing, or a cloned GitHub repo later). The "hands" always know which
 // folder they're operating in.
 function createToolRunner(rootPath) {
+  const root = path.resolve(rootPath);
+
+  // Turns a model-supplied path into an absolute one, refusing anything that
+  // escapes the workspace (e.g. "../../etc/passwd").
+  function resolveInside(filePath) {
+    const fullPath = path.resolve(root, filePath);
+    if (fullPath !== root && !fullPath.startsWith(root + path.sep)) {
+      throw new Error(`Path is outside the workspace: ${filePath}`);
+    }
+    return fullPath;
+  }
+
   function readFile(args) {
-    return fs.readFileSync(path.join(rootPath, args.file_path), 'utf8');
+    return fs.readFileSync(resolveInside(args.file_path), 'utf8');
   }
 
   function writeFile(args) {
-    const fullPath = path.join(rootPath, args.file_path);
+    const fullPath = resolveInside(args.file_path);
     fs.mkdirSync(path.dirname(fullPath), { recursive: true });
     fs.writeFileSync(fullPath, args.content, 'utf8');
     return `Wrote ${args.file_path} (${args.content.length} chars)`;
@@ -70,11 +82,17 @@ function createToolRunner(rootPath) {
     }
   }
 
+  // Failures come back as text so the model can read them and try again,
+  // instead of crashing the whole run.
   return function (call) {
-    if (call.name === 'read_file') return readFile(call.args);
-    if (call.name === 'write_file') return writeFile(call.args);
-    if (call.name === 'run_command') return runCommand(call.args);
-    throw new Error(`Unknown tool: ${call.name}`);
+    try {
+      if (call.name === 'read_file') return readFile(call.args);
+      if (call.name === 'write_file') return writeFile(call.args);
+      if (call.name === 'run_command') return runCommand(call.args);
+      throw new Error(`Unknown tool: ${call.name}`);
+    } catch (err) {
+      return `ERROR: ${err.message}`;
+    }
   };
 }
 
