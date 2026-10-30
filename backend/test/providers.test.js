@@ -183,6 +183,14 @@ test('gemini: extractJson asks for JSON and sends the image inline', async () =>
   assert.deepStrictEqual(client.calls[0][0], { inlineData: { mimeType: 'image/png', data: 'AAA' } });
 });
 
+test('gemini: extractJson enforces the schema, minus the parts Gemini rejects', async () => {
+  const client = fakeGemini('{}');
+  const schema = { type: 'object', properties: { a: { type: 'object', properties: { b: { type: 'string' } }, additionalProperties: false } }, additionalProperties: false };
+  await providers.createAI({ provider: 'gemini', apiKey: 'k' }, client).extractJson({ system: 's', prompt: 'p', imageBase64: 'A', mimeType: 'image/png', schema: schema });
+  assert.deepStrictEqual(client.configs[0].generationConfig.responseSchema, { type: 'object', properties: { a: { type: 'object', properties: { b: { type: 'string' } } } } });
+  assert.strictEqual(schema.additionalProperties, false); // the caller's schema is left alone
+});
+
 test('gemini: transcribes audio', async () => {
   const ai = providers.createAI({ provider: 'gemini', apiKey: 'k' }, fakeGemini('  make it bigger \n'));
   assert.strictEqual(await ai.transcribe({ audioBase64: 'AAA', mimeType: 'audio/webm' }), 'make it bigger');

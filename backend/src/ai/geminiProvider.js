@@ -4,6 +4,19 @@ const gemini = require('../agent/gemini');
 // Gemini, behind the same small interface as the other providers.
 // The agent loop was written for Gemini's chat, so chat needs no translation.
 
+// Gemini's schema format is the same as JSON Schema except it rejects
+// "additionalProperties", so we make a copy without it.
+function geminiSchema(schema) {
+  if (Array.isArray(schema)) return schema.map(geminiSchema);
+  if (schema === null || typeof schema !== 'object') return schema;
+  const copy = {};
+  for (const key of Object.keys(schema)) {
+    if (key === 'additionalProperties') continue;
+    copy[key] = geminiSchema(schema[key]);
+  }
+  return copy;
+}
+
 function create(options, client) {
   const model = options.model || gemini.DEFAULT_MODEL;
   if (!client) client = new googleAI.GoogleGenerativeAI(options.apiKey);
@@ -19,7 +32,8 @@ function create(options, client) {
     const jsonModel = client.getGenerativeModel({
       model: model,
       systemInstruction: request.system,
-      generationConfig: { responseMimeType: 'application/json' },
+      // responseSchema makes Gemini stick to the shape instead of just trying to.
+      generationConfig: { responseMimeType: 'application/json', responseSchema: geminiSchema(request.schema) },
     });
     const result = await gemini.withRetry(function () {
       return jsonModel.generateContent([
