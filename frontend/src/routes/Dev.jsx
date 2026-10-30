@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PROVIDERS, aiHeaders, loadAiSettings, providerInfo, saveAiSettings } from '../lib/aiSettings';
+import { fileToBase64, postStream } from '../lib/stream';
 
 // Bare test page — no design on purpose. Each feature adds a section here so
 // we can try it before the real editor exists. Open it at /dev.
@@ -12,6 +13,22 @@ const SAMPLES = ['bakery', 'salon'];
 function typeOf(id) {
   return id.split('-')[0];
 }
+
+// Tailwind removes the browser's default look from buttons and inputs, so
+// on this bare page we give them plain borders to tell them apart.
+const DEV_STYLES = `
+  .dev-page h1 { font-size: 22px; font-weight: bold; margin-bottom: 12px; }
+  .dev-page h2 { font-size: 16px; font-weight: bold; margin: 28px 0 10px; padding-top: 14px; border-top: 3px solid #000; }
+  .dev-page p { margin: 8px 0; }
+  .dev-page button { border: 2px solid #000; border-radius: 4px; padding: 3px 10px; background: #e8e8e8; cursor: pointer; }
+  .dev-page button:hover { background: #c8e0ff; }
+  .dev-page button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .dev-page input, .dev-page select { border: 1px solid #555; border-radius: 3px; padding: 2px 6px; background: #fffbe6; }
+  .dev-page input[type=file] { background: none; border: 1px dashed #555; }
+  .dev-page a { color: #0645ad; text-decoration: underline; }
+  .dev-page ol { list-style: decimal; padding-left: 24px; }
+  .dev-page summary { cursor: pointer; text-decoration: underline; }
+`;
 
 export default function Dev() {
   // useState gives back two things in a list: the current value, and a
@@ -64,10 +81,13 @@ export default function Dev() {
   const src = '/api/dev/site/' + theme + '/index.html?sample=' + sample + '&sections=' + sectionList.join(',');
 
   return (
-    <div style={{ background: '#fff', color: '#000', minHeight: '100vh', padding: 16, fontFamily: 'monospace' }}>
+    <div className="dev-page" style={{ background: '#fff', color: '#000', minHeight: '100vh', padding: 16, fontFamily: 'monospace' }}>
+      <style>{DEV_STYLES}</style>
       <h1>ShipIt dev page</h1>
 
       <AiSettings />
+
+      <PhotoBuild />
 
       <h2>Feature 3 — sections</h2>
       <p>
@@ -163,6 +183,59 @@ function RunVersions() {
           );
         }) : null}
       </div>
+    </div>
+  );
+}
+
+// Feature 5: upload a photo, watch the build stream in, see the site.
+function PhotoBuild() {
+  const [file, setFile] = useState(null);
+  const [sentence, setSentence] = useState('');
+  const [events, setEvents] = useState([]);
+  const [building, setBuilding] = useState(false);
+
+  async function build() {
+    setBuilding(true);
+    setEvents([]);
+    const imageBase64 = await fileToBase64(file);
+    const seen = [];
+    await postStream('/api/build', { imageBase64: imageBase64, mimeType: file.type, sentence: sentence }, function (event) {
+      seen.push(event);
+      setEvents(seen.slice()); // a new array, so React re-draws
+    });
+    setBuilding(false);
+  }
+
+  let built = null;
+  let business = null;
+  for (const event of events) {
+    if (event.type === 'built') built = event;
+    if (event.type === 'extracted') business = event.business;
+  }
+
+  return (
+    <div>
+      <h2>Feature 5 — photo to site</h2>
+      <p>
+        photo: <input type="file" accept="image/*" onChange={function (e) { setFile(e.target.files[0] || null); }} />{' '}
+        one line about it (optional):{' '}
+        <input value={sentence} placeholder="family bakery since 1987" onChange={function (e) { setSentence(e.target.value); }} />{' '}
+        <button onClick={build} disabled={!file || building}>{building ? 'building…' : 'build site'}</button>
+      </p>
+      <ol>
+        {events.map(function (event, i) {
+          let detail = event.message || event.runId || event.previewUrl || '';
+          if (event.type === 'extracted') detail = event.business.name + ' — ' + event.business.items.length + ' items, vibe ' + event.business.vibe;
+          return <li key={i}>{event.type}: {detail}</li>;
+        })}
+      </ol>
+      {business ? <details><summary>what the AI read</summary><pre>{JSON.stringify(business, null, 2)}</pre></details> : null}
+      {built ? (
+        <div>
+          <p>layout: {built.layout.theme} — {built.layout.sections.join(', ')} — <a href={built.previewUrl} target="_blank" rel="noreferrer">open</a></p>
+          <iframe title="built site" src={built.previewUrl} style={{ width: '100%', height: 600, border: '1px solid #000' }} />
+        </div>
+      ) : null}
     </div>
   );
 }
