@@ -29,3 +29,7 @@ temp/
 
 # Brainstorm mockups
 .superpowers/
+
+# Generated sites and recorded runs
+backend/workspaces/
+backend/recordings/

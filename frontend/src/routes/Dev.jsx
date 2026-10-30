@@ -116,6 +116,50 @@ export default function Dev() {
         src={src}
         style={{ width: width, maxWidth: '100%', height: 760, border: '1px solid #000' }}
       />
+
+      <RunVersions />
+    </div>
+  );
+}
+
+// Feature 4: a run keeps every version (v1, v2, ...) as its own folder.
+function RunVersions() {
+  const [run, setRun] = useState(null); // { runId, versions: [{ version, previewUrl }] }
+
+  function startRun() {
+    fetch('/api/dev/run', { method: 'POST' })
+      .then(function (res) { return res.json(); })
+      .then(function (body) {
+        setRun({ runId: body.runId, versions: [body] });
+      });
+  }
+
+  function nextVersion() {
+    fetch('/api/dev/run/' + run.runId + '/next', { method: 'POST' })
+      .then(function (res) { return res.json(); })
+      .then(function (body) {
+        setRun({ runId: run.runId, versions: run.versions.concat([body]) });
+      });
+  }
+
+  return (
+    <div>
+      <h2>Feature 4 — runs and versions</h2>
+      <p>
+        <button onClick={startRun}>start a new run (builds v1)</button>{' '}
+        <button onClick={nextVersion} disabled={!run}>copy to next version (adds "(vN)" to the title)</button>
+      </p>
+      {run ? <p>run id: {run.runId} — older versions should never change</p> : null}
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+        {run ? run.versions.map(function (v) {
+          return (
+            <div key={v.version}>
+              <p>v{v.version}: <a href={v.previewUrl} target="_blank" rel="noreferrer">{v.previewUrl}</a></p>
+              <iframe title={'v' + v.version} src={v.previewUrl} style={{ width: 480, height: 360, border: '1px solid #000' }} />
+            </div>
+          );
+        }) : null}
+      </div>
     </div>
   );
 }

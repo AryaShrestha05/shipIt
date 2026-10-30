@@ -119,10 +119,22 @@ function siteFiles(theme) {
   ];
 }
 
+// Writes a finished site into a folder: index.html, the three site files,
+// and layout.json (so we always know which sections a site was built from).
+function writeSite(dir, layout, business) {
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'index.html'), composeSite(layout, business), 'utf8');
+  for (const file of siteFiles(layout.theme)) {
+    fs.copyFileSync(file.from, path.join(dir, file.to));
+  }
+  fs.writeFileSync(path.join(dir, 'layout.json'), JSON.stringify(layout, null, 2), 'utf8');
+}
+
 module.exports = {
   THEMES: THEMES,
   SECTION_IDS: SECTION_IDS,
   composeSite: composeSite,
   pickLayout: pickLayout,
   siteFiles: siteFiles,
+  writeSite: writeSite,
 };
