@@ -8,6 +8,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/try" replace />} />
+      {/* Each Route: when the address matches path, show that page. */}
       <Route path="/try" element={<Editor />} />
       <Route path="/dev" element={<Dev />} />
       <Route path="/blocks" element={<Blocks />} />

@@ -30,6 +30,7 @@ const THEMES = {
 };
 
 // Every section variant on disk, e.g. ['cta-band', 'hero-centered', ...]
+// Read once when the server starts: every .html file in templates/sections is one section.
 const SECTION_IDS = fs.readdirSync(SECTIONS_DIR)
   .filter(function (file) { return file.endsWith('.html'); })
   .map(function (file) { return file.replace('.html', ''); })
@@ -58,10 +59,12 @@ function composeSite(layout, business) {
 
   const base = fs.readFileSync(path.join(TEMPLATES_DIR, 'base.html'), 'utf8');
   const page = base
+    // Put the sections into the page shell, then fill in the theme name and font link.
     .replace('<!--sections-->', sectionsHtml)
     .split('{{theme}}').join(theme)
     .split('{{fontsHref}}').join(THEMES[theme].fonts);
 
+  // Last step: fill in the business's name, items, colors and wording.
   return fill.fillTemplate(page, business);
 }
 
@@ -70,6 +73,7 @@ function composeSite(layout, business) {
 function seededRandom(text) {
   let seed = 0;
   for (let i = 0; i < text.length; i++) {
+    // Turn the name into a number. >>> 0 keeps it a positive whole number.
     seed = (seed * 31 + text.charCodeAt(i)) >>> 0;
   }
   return function () {
@@ -82,6 +86,7 @@ function seededRandom(text) {
 }
 
 function pickVariant(type, random) {
+  // Every variant of one kind, e.g. all the hero-… sections.
   const options = SECTION_IDS.filter(function (id) { return sectionType(id) === type; });
   return options[Math.floor(random() * options.length)];
 }
@@ -94,6 +99,7 @@ function pickLayout(business) {
   if (business.vibe === 'bold') theme = 'noir';
 
   const sections = [pickVariant('hero', random)];
+  // About 60% of sites get the scrolling marquee.
   if (random() < 0.6) sections.push('marquee');
 
   // The highlight goes before or after the items, or is left out.
@@ -127,6 +133,7 @@ function writeSite(dir, layout, business) {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), composeSite(layout, business), 'utf8');
   for (const file of siteFiles(layout.theme)) {
+    // Copy the shared css/js files next to index.html.
     fs.copyFileSync(file.from, path.join(dir, file.to));
   }
   fs.writeFileSync(path.join(dir, 'custom.css'), '/* Changes made with ShipIt go here. */\n', 'utf8');

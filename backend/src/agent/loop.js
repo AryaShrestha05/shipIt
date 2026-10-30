@@ -21,6 +21,7 @@ async function runAgent(model, prompt, runTool, onEvent, options) {
     return Boolean(signal && signal.aborted);
   }
 
+  // A conversation that remembers everything said so far.
   const chat = model.startChat();
 
   onEvent({ type: 'user_prompt', content: prompt });
@@ -33,6 +34,7 @@ async function runAgent(model, prompt, runTool, onEvent, options) {
   let calls = result.response.functionCalls() || [];
   let step = 0;
 
+  // Keep going while the AI asks for tools. When it answers with plain text instead, it's done.
   while (calls.length > 0) {
     if (stopped()) break;
     if (step >= maxSteps) {
@@ -49,17 +51,20 @@ async function runAgent(model, prompt, runTool, onEvent, options) {
 
       let toolOutput;
       try {
+        // Actually do what the AI asked: read, edit or write a file.
         toolOutput = runTool(call);
       } catch (err) {
         toolOutput = 'ERROR: ' + err.message;
       }
       onEvent({ type: 'tool_result', step: step, name: call.name, output: toolOutput });
 
+      // Collect each tool's result to send back to the AI.
       responses.push({ functionResponse: { name: call.name, response: { content: toolOutput } } });
     }
     if (stopped()) break;
 
     result = await retry.withRetry(function () {
+      // Send all the results back; the AI decides what to do next.
       return chat.sendMessage(responses);
     });
     calls = result.response.functionCalls() || [];

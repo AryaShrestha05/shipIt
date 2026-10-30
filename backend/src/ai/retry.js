@@ -22,6 +22,7 @@ async function withRetry(fn, options) {
   const retries = options.retries === undefined ? 3 : options.retries;
   const baseMs = options.baseMs === undefined ? 800 : options.baseMs;
 
+  // Loops until a return (success) or throw (give up) inside ends it.
   for (let attempt = 0; ; attempt++) {
     try {
       return await fn();
@@ -31,6 +32,7 @@ async function withRetry(fn, options) {
         if (options.onFallback) return options.onFallback();
         throw err;
       }
+      // Wait longer each time: 800ms, 1.6s, 3.2s (2 ** n means 2 to the power of n).
       await sleep(baseMs * 2 ** attempt);
     }
   }

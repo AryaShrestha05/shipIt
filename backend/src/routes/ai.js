@@ -19,6 +19,7 @@ function createAiRouter(deps) {
     }
 
     try {
+      // The cheapest possible test: ask the AI to say OK.
       const chat = ai.chatModel({ system: 'Reply with the single word OK.' }).startChat();
       await chat.sendMessage('Say OK.');
       res.json({ ok: true, provider: ai.provider, model: ai.model, canTranscribe: ai.canTranscribe });

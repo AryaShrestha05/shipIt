@@ -22,6 +22,7 @@ function stringFields(keys) {
   return { type: 'object', properties: properties, required: keys, additionalProperties: false };
 }
 
+// The exact shape we ask the AI to fill in; it must answer with JSON like this.
 const BUSINESS_SCHEMA = {
   type: 'object',
   properties: {
@@ -59,6 +60,7 @@ function isObject(value) {
 }
 
 function color(value, fallback) {
+  // A regular expression: does it look like #abc or #aabbcc? (i = upper or lower case)
   if (typeof value === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value)) return value;
   return fallback;
 }
@@ -67,6 +69,7 @@ function color(value, fallback) {
 function brightness(hex) {
   let digits = hex.slice(1);
   if (digits.length === 3) digits = digits[0] + digits[0] + digits[1] + digits[1] + digits[2] + digits[2];
+  // Hex color → red, green, blue numbers from 0 to 255. parseInt(..., 16) reads base-16.
   const r = parseInt(digits.slice(0, 2), 16);
   const g = parseInt(digits.slice(2, 4), 16);
   const b = parseInt(digits.slice(4, 6), 16);
@@ -74,6 +77,7 @@ function brightness(hex) {
 }
 
 function normalizeBusiness(raw) {
+  // If the AI sent something that isn't an object, start from empty so nothing crashes.
   if (!isObject(raw)) raw = {};
 
   let palette = raw.palette;
@@ -82,8 +86,10 @@ function normalizeBusiness(raw) {
   const items = [];
   if (Array.isArray(raw.items)) {
     for (const item of raw.items) {
+      // Skip broken items or items with no name (continue = go to the next one).
       if (!isObject(item) || !text(item.name)) continue;
       items.push({ name: text(item.name), price: text(item.price), note: text(item.note) });
+      // Stop at 8 items so the menu stays tidy (break = leave the loop).
       if (items.length === MAX_ITEMS) break;
     }
   }
@@ -110,6 +116,7 @@ function normalizeBusiness(raw) {
   return {
     name: text(raw.name) || 'Your business',
     tagline: text(raw.tagline),
+    // a ? b : c means "if a, then b, otherwise c".
     vibe: VIBES.includes(raw.vibe) ? raw.vibe : 'warm',
     palette: {
       bg: bg,
@@ -129,6 +136,7 @@ async function extractBusiness(ai, request) {
   let prompt = 'Read this photo and write the website content for this business.';
   if (request.sentence) prompt += '\nThe owner says: ' + request.sentence;
 
+  // Ask the AI to read the photo and fill in BUSINESS_SCHEMA.
   const raw = await ai.extractJson({
     system: SYSTEM,
     prompt: prompt,

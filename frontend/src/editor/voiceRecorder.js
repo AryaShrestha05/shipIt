@@ -21,12 +21,14 @@ export function createVoiceRecorder(deps) {
       throw new Error("This browser can't use the microphone.");
     }
     try {
+      // Ask for the microphone (the browser shows its permission popup the first time).
       stream = await mediaDevices.getUserMedia({ audio: true });
     } catch {
       throw new Error('The microphone is blocked.');
     }
     chunks = [];
     recorder = new MediaRecorderClass(stream);
+    // The recorder hands over audio in chunks; keep them all.
     recorder.ondataavailable = function (e) {
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };

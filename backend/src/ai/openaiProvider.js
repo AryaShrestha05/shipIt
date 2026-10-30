@@ -10,6 +10,7 @@ function create(options, client) {
   if (!client) client = new openaiSdk.OpenAI({ apiKey: options.apiKey });
 
   function chatModel(chatOptions) {
+    // Translate our tool list into OpenAI's format ({ type: 'function', function: {...} }).
     const tools = (chatOptions.tools || []).map(function (tool) {
       return { type: 'function', function: { name: tool.name, description: tool.description, parameters: tool.parameters } };
     });
@@ -25,6 +26,7 @@ function create(options, client) {
               messages.push({ role: 'user', content: input });
             } else {
               input.forEach(function (part, i) {
+                // Each tool result is matched to the call it answers by that call's id.
                 messages.push({ role: 'tool', tool_call_id: pendingIds[i], content: String(part.functionResponse.response.content) });
               });
             }
@@ -32,6 +34,7 @@ function create(options, client) {
             const body = { model: model, messages: messages.slice() };
             if (tools.length > 0) body.tools = tools;
             const completion = await client.chat.completions.create(body);
+            // OpenAI can return several answers ("choices"); we always use the first.
             const message = completion.choices[0].message;
             messages.push(message);
 
@@ -74,12 +77,14 @@ function create(options, client) {
           ],
         },
       ],
+      // strict: OpenAI must return JSON that matches our schema exactly.
       response_format: { type: 'json_schema', json_schema: { name: 'result', schema: request.schema, strict: true } },
     });
     return JSON.parse(completion.choices[0].message.content);
   }
 
   async function transcribe(request) {
+    // Turn the base64 text back into an audio file for OpenAI.
     const file = await openaiSdk.toFile(Buffer.from(request.audioBase64, 'base64'), 'clip.webm', { type: request.mimeType });
     const result = await client.audio.transcriptions.create({ file: file, model: TRANSCRIBE_MODEL });
     return result.text;

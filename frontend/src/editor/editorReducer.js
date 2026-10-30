@@ -46,13 +46,16 @@ function onServerEvent(state, event) {
 
 export function editorReducer(state, action) {
   if (action.type === 'BUILD_START') {
+    // A new build: forget everything from before and show the building screen.
     return change(initialState, { stage: 'building' });
   }
   if (action.type === 'SSE_EVENT') {
     return onServerEvent(state, action.event);
   }
   if (action.type === 'ADD_PIN') {
+    // nextPinId++ uses the current number, then adds 1 for next time.
     const pin = { id: nextPinId++, sid: action.sid, rect: action.rect, label: action.label, text: '', status: 'draft' };
+    // concat makes a NEW list with the pin added. React only notices changes when it gets a new object.
     return change(state, { pins: state.pins.concat([pin]) });
   }
   if (action.type === 'UPDATE_PIN') {
@@ -84,5 +87,6 @@ export function editorReducer(state, action) {
 // says what to change.
 export function canShip(state) {
   if (state.stage !== 'editing' || state.pins.length === 0) return false;
+  // every = true only if this is true for every single pin.
   return state.pins.every(function (pin) { return pin.text.trim() !== ''; });
 }

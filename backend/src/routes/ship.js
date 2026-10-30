@@ -34,6 +34,7 @@ function createShipRouter(deps) {
     if (pins.length === 0) return res.status(400).json({ error: 'Add at least one note first' });
     const allWritten = pins.every(function (pin) { return pin && pin.sid && typeof pin.text === 'string' && pin.text.trim(); });
     if (!allWritten) return res.status(400).json({ error: 'Every note needs some text' });
+    // 409 means "conflict": this site is already shipping.
     if (shipping.has(body.runId)) return res.status(409).json({ error: 'This site is already shipping' });
 
     let ai;
@@ -44,8 +45,10 @@ function createShipRouter(deps) {
     }
 
     const runId = body.runId;
+    // Mark this site as busy; the finally block below frees it again.
     shipping.add(runId);
     const stream = sse.openSse(res);
+    // The version this Ship will create, e.g. 2 when v1 is the latest.
     const to = workspace.latestVersion(runId) + 1;
     const rec = recorder.createRecorder(runId, 'ship-' + to);
     function send(event) {
@@ -54,9 +57,11 @@ function createShipRouter(deps) {
     }
 
     try {
+      // Does all the work (see ship/ship.js). await waits until it's finished.
       await shipRun({
         runId: runId,
         pins: pins.map(function (pin) { return { sid: pin.sid, label: String(pin.label || ''), text: pin.text }; }),
+        // The AI, given its rules and the list of tools it may use.
         model: ai.chatModel({ system: prompts.SHIP_SYSTEM, tools: tools.toolDeclarations }),
         // QA opens the site on this same server, at the port it's listening on.
         baseUrl: 'http://localhost:' + req.socket.localPort,
@@ -71,6 +76,7 @@ function createShipRouter(deps) {
     } catch (err) {
       send({ type: 'error', message: err.message });
     } finally {
+      // Free the site so it can be shipped again.
       shipping.delete(runId);
       rec.save();
       res.end();

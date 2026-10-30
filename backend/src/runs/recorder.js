@@ -21,6 +21,7 @@ function createRecorder(runId, phase) {
   const entries = [];
 
   function record(event) {
+    // t = milliseconds since the run started, so a replay keeps the same timing.
     entries.push({ t: Date.now() - start, event: event });
   }
 

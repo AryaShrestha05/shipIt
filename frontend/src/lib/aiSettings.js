@@ -14,6 +14,7 @@ export const PROVIDERS = [
 // empty key, which means "use the server's own key".
 export function loadAiSettings() {
   try {
+    // localStorage = a small storage box in this browser that survives page reloads.
     const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
     if (saved && saved.provider) return saved;
   } catch {

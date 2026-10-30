@@ -11,6 +11,7 @@ const COLOR = '#7c5cff'; // violet: doesn't clash with any site theme
 // nearest element with a name tag. Returns null if there isn't one.
 export function findSidElement(target) {
   let el = target;
+  // nodeType 1 = an HTML element. Climb to the parent until we find a data-sid or reach <body>.
   while (el && el.nodeType === 1 && el.tagName !== 'BODY' && el.tagName !== 'HTML') {
     if (el.hasAttribute('data-sid')) return el;
     el = el.parentElement;
@@ -139,6 +140,7 @@ export function drawPins(doc, pins) {
       'position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:999px;' +
       'display:grid;place-items:center;background:' + COLOR + ';color:#fff;' +
       'font:700 12px/1 system-ui,sans-serif;box-shadow:0 0 0 3px #fff,0 6px 16px rgba(0,0,0,0.25);' +
+      // Spot on the page = spot on screen + how far the page is scrolled.
       'left:' + (rect.left + win.scrollX) + 'px;top:' + (rect.top + win.scrollY) + 'px;';
     layer.appendChild(dot);
   });

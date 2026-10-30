@@ -39,10 +39,12 @@ function create(options, client) {
     });
     const result = await retry.withRetry(function () {
       return jsonModel.generateContent([
+        // The photo travels inside the request as base64 text.
         { inlineData: { mimeType: request.mimeType, data: request.imageBase64 } },
         { text: request.prompt + '\n\nReply with JSON matching this schema:\n' + JSON.stringify(request.schema) },
       ]);
     });
+    // The AI answers with JSON text; JSON.parse turns it into a JavaScript object.
     return JSON.parse(result.response.text());
   }
 

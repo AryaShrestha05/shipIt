@@ -47,6 +47,7 @@ function escapeHtml(value) {
 function replaceAll(text, values) {
   let result = text;
   for (const key of Object.keys(values)) {
+    // split + join replaces EVERY {{key}}, not just the first one.
     result = result.split('{{' + key + '}}').join(escapeHtml(values[key]));
   }
   return result;
@@ -56,11 +57,13 @@ function replaceAll(text, values) {
 // so keep filling <!--items--> blocks until none are left.
 function fillItems(html, items) {
   let result = html;
+  // Loop until the return inside (when no <!--items--> block is left).
   for (;;) {
     const start = result.indexOf('<!--items-->');
     const end = result.indexOf('<!--/items-->', start);
     if (start === -1 || end === -1) return result;
 
+    // The HTML for one row: everything between the two markers.
     const row = result.slice(start + '<!--items-->'.length, end);
     let rows = '';
     for (let i = 0; i < items.length; i++) {
@@ -83,6 +86,7 @@ function fillTemplate(html, business) {
 
   const values = {};
   for (const key of Object.keys(DEFAULT_COPY)) {
+    // The business's own wording, or the neutral default if it has none.
     values[key] = copy[key] || DEFAULT_COPY[key];
   }
   const withCopy = replaceAll(withItems, values);

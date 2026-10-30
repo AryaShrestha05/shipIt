@@ -24,7 +24,9 @@ const fade = {
 };
 
 export default function Editor() {
+  // state = everything the editor knows. dispatch({ type: ... }) asks editorReducer to change it.
   const [state, dispatch] = useReducer(editorReducer, initialState);
+  // useState: a value React remembers between redraws, plus the function that changes it.
   const [width, setWidth] = useState('desktop');
   const stopRef = useRef(null); // lets "start over" cancel a build in progress
   const [siteDoc, setSiteDoc] = useState(null); // the website's page inside the iframe
@@ -42,6 +44,8 @@ export default function Editor() {
 
   // While editing, clicks on the site drop pins.
   useEffect(function () {
+    // useEffect runs after React draws, and again whenever siteDoc or the stage changes.
+    // What it returns (detach) is called to clean up before the next run.
     if (!siteDoc || state.stage !== 'editing') return undefined;
     return attachPicker(siteDoc, {
       onPick: function (pick) {
@@ -70,11 +74,13 @@ export default function Editor() {
 
   async function startBuild(choice) {
     dispatch({ type: 'BUILD_START' });
+    // Lets "start over" cancel this request halfway.
     const controller = new AbortController();
     stopRef.current = controller;
     try {
       const imageBase64 = await fileToBase64(choice.file);
       await api.build({ imageBase64: imageBase64, mimeType: choice.file.type, sentence: choice.sentence }, function (event) {
+        // Every live event from the server goes into the reducer.
         dispatch({ type: 'SSE_EVENT', event: event });
       }, controller.signal);
     } catch (err) {
@@ -98,7 +104,9 @@ export default function Editor() {
         {state.stage !== 'photo' ? <button className="ed-link" onClick={startOver}>start over</button> : <Link to="/blocks" className="ed-link">blocks</Link>}
       </nav>
 
+      {/* AnimatePresence lets the old screen fade out before the new one fades in. */}
       <AnimatePresence mode="wait">
+        {/* One screen per stage. cond ? (screen) : null means "show this screen only if cond". */}
         {state.stage === 'photo' ? (
           <Motion.main key="photo" className="ed-center" {...fade}>
             <PhotoDrop onBuild={startBuild} error={state.error} />

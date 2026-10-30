@@ -28,7 +28,9 @@ function versionDir(runId, version) {
 }
 
 function createRun() {
+  // A random id like "ab12cd34": a random UUID, dashes removed, first 8 characters.
   const runId = crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+  // recursive: also create any missing parent folders.
   fs.mkdirSync(runDir(runId), { recursive: true });
   return runId;
 }
@@ -53,6 +55,7 @@ function writeVersion(runId, version, files) {
 
 function copyVersion(runId, from, to) {
   const dir = versionDir(runId, to);
+  // Copy the whole folder, every file, from the old version to the new one.
   fs.cpSync(versionDir(runId, from), dir, { recursive: true });
   return dir;
 }
@@ -61,6 +64,7 @@ function copyVersion(runId, from, to) {
 function latestVersion(runId) {
   let latest = 0;
   for (const name of fs.readdirSync(runDir(runId))) {
+    // Is the folder name like v1, v2…? If so, match[1] is the number.
     const match = name.match(/^v(\d+)$/);
     if (match && Number(match[1]) > latest) latest = Number(match[1]);
   }

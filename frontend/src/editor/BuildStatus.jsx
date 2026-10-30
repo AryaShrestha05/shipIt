@@ -12,6 +12,7 @@ export default function BuildStatus(props) {
       <ul className="ed-status">
         <AnimatePresence initial={false}>
           {lines.map(function (line, i) {
+            // Every line except the last is finished; the last one is still running.
             const done = i < lines.length - 1;
             return (
               <Motion.li

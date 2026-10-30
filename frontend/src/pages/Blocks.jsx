@@ -118,6 +118,7 @@ function ScaledFrame(props) {
   useEffect(function () {
     const box = boxRef.current;
     const watcher = new ResizeObserver(function () {
+      // Shrink the 1280px-wide page to fit the card's width.
       setScale(box.clientWidth / PREVIEW_WIDTH);
     });
     watcher.observe(box);

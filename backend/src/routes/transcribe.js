@@ -27,9 +27,11 @@ function createTranscribeRouter(deps) {
     }
 
     try {
+      // Send the audio to the AI and wait for the words.
       const text = await ai.transcribe({ audioBase64: body.audioBase64, mimeType: body.mimeType || 'audio/webm' });
       res.json({ text: text });
     } catch (err) {
+      // 502 means an outside service (the AI) failed.
       res.status(502).json({ error: err.message });
     }
   });

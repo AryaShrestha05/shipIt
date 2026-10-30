@@ -36,6 +36,7 @@ function create(options, client) {
   }
 
   function chatModel(chatOptions) {
+    // Translate our tool list into Claude's format (input_schema instead of parameters).
     const tools = (chatOptions.tools || []).map(function (tool) {
       return { name: tool.name, description: tool.description, input_schema: tool.parameters };
     });
@@ -63,12 +64,15 @@ function create(options, client) {
             // Send Claude's turn back exactly as it came (thinking blocks included).
             messages.push({ role: 'assistant', content: response.content });
 
+            // Claude's reply is a list of blocks (text, thinking, tool requests). Keep only the tool requests.
             const toolUses = response.content.filter(function (block) { return block.type === 'tool_use'; });
             pendingIds = toolUses.map(function (block) { return block.id; });
+            // Claude's safety check can decline a request; we turn that into a friendly message below.
             const refused = response.stop_reason === 'refusal';
 
             return {
               response: {
+                // These two functions make Claude's reply look like Gemini's, which is what agent/loop.js reads.
                 functionCalls: function () {
                   if (refused || toolUses.length === 0) return undefined;
                   return toolUses.map(function (block) { return { name: block.name, args: block.input }; });

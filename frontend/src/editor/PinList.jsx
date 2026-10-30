@@ -14,6 +14,7 @@ export default function PinList(props) {
   return (
     <ol className="ed-pins">
       <AnimatePresence initial={false}>
+        {/* One card per pin. i starts at 0, so the number shown is i + 1. */}
         {props.pins.map(function (pin, i) {
           return (
             <Motion.li

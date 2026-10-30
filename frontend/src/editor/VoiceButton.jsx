@@ -12,6 +12,7 @@ export default function VoiceButton(props) {
   const recorderRef = useRef(null);
   const startedAtRef = useRef(0);
 
+  // Mic button pressed down: start recording.
   async function begin(e) {
     e.preventDefault();
     if (state !== 'idle') return;
@@ -27,6 +28,7 @@ export default function VoiceButton(props) {
     }
   }
 
+  // Button let go (or the pointer slid off it): stop and turn the recording into text.
   async function end() {
     const recorder = recorderRef.current;
     if (!recorder) return;

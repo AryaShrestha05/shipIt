@@ -25,6 +25,7 @@ export async function postStream(url, body, onEvent, signal) {
     return;
   }
 
+  // Read the response piece by piece as it arrives, instead of waiting for the end.
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -32,6 +33,7 @@ export async function postStream(url, body, onEvent, signal) {
   while (true) {
     const chunk = await reader.read();
     if (chunk.done) break;
+    // Bytes → text, added onto whatever we already had.
     buffer += decoder.decode(chunk.value, { stream: true });
     const parsed = parseSseChunk(buffer);
     buffer = parsed.rest;
@@ -62,6 +64,7 @@ export function parseSseChunk(buffer) {
 export function fileToBase64(file) {
   return new Promise(function (resolve, reject) {
     const reader = new FileReader();
+    // result looks like "data:image/png;base64,AAAA…"; keep only the part after the comma.
     reader.onload = function () { resolve(String(reader.result).split(',')[1]); };
     reader.onerror = function () { reject(reader.error); };
     reader.readAsDataURL(file);

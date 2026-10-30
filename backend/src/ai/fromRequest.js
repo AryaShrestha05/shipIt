@@ -11,6 +11,7 @@ const providers = require('./providers');
 // With no key sent, we fall back to the server's own GEMINI_API_KEY
 // (that's what the stage demo uses).
 
+// A special kind of error, so routes can tell "no key" (401) apart from other problems.
 class NoKeyError extends Error {
   constructor() {
     super('No AI key. Add your Gemini, OpenAI or Claude key in settings.');
@@ -19,6 +20,7 @@ class NoKeyError extends Error {
 }
 
 function aiFromRequest(req) {
+  // req.get reads a request header. The browser adds these (see frontend/src/lib/aiSettings.js).
   const key = req.get('x-shipit-key');
   if (key) {
     return providers.createAI({

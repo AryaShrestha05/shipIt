@@ -20,6 +20,7 @@ const PROVIDERS = {
 // options: provider ('gemini' | 'openai' | 'claude'), apiKey, model (optional)
 // client is only passed in tests, to swap the real SDK for a fake one.
 function createAI(options, client) {
+  // Look up the provider file by name, e.g. PROVIDERS['claude'].
   const provider = PROVIDERS[options.provider];
   if (!provider) throw new Error('Unknown AI provider: ' + options.provider);
   return provider.create(options, client);

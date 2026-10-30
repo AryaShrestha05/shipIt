@@ -11,6 +11,7 @@ export default function SitePreview(props) {
           <span className="ed-chrome-dots"><i /><i /><i /></span>
           <span className="ed-chrome-url">{props.label}</span>
         </div>
+        {/* An iframe is a page inside our page. key={props.src} makes React load a fresh one when the version changes. */}
         <iframe
           key={props.src}
           title="Your website"

@@ -36,6 +36,7 @@ function shotUrl(runId, version, file) {
 // Every data-sid in a page, so we can tell if an edit removed one.
 function sidsIn(html) {
   const sids = [];
+  // Finds every data-sid="..." in the page. The g at the end means "all of them".
   const pattern = /data-sid="([^"]+)"/g;
   let match = pattern.exec(html);
   while (match) {
@@ -53,8 +54,10 @@ async function shipRun(options) {
 
   const from = workspace.latestVersion(runId);
   const to = from + 1;
+  // Start from a copy, so the old version is never touched.
   workspace.copyVersion(runId, from, to);
   const expectedSids = sidsIn(fs.readFileSync(path.join(workspace.versionDir(runId, from), 'index.html'), 'utf8'));
+  // The AI's tools can only touch files inside the new version's folder.
   const runTool = tools.createToolRunner(workspace.versionDir(runId, to));
 
   // The AI's tool steps, as short readable lines (not whole file contents).
@@ -78,14 +81,17 @@ async function shipRun(options) {
 
   // 2. Make every change.
   onEvent({ type: 'status', message: 'applying your ' + options.pins.length + ' change' + (options.pins.length === 1 ? '' : 's') });
+  // Run the AI with all the notes; its final reply becomes the list of changes.
   const changes = prompts.parseSummary(await agent(options.model, prompts.buildShipPrompt(options.pins), runTool, onAgentEvent, { signal: options.signal }));
 
   // 3. Test like a customer; fix and retest up to MAX_FIX_ROUNDS times.
   onEvent({ type: 'status', message: 'testing your site like a customer' });
   let result = await test(to);
   let round = 0;
+  // Report the checks, then stop if all passed or we've used up the fix rounds.
   while (true) {
     result.checks.forEach(function (check) { onEvent({ type: 'qa_check', round: round, check: check }); });
+    // Only the checks that failed (! means "not").
     const failed = result.checks.filter(function (check) { return !check.ok; });
     if (failed.length === 0 || round >= MAX_FIX_ROUNDS) break;
     if (options.signal && options.signal.aborted) break;
@@ -97,6 +103,7 @@ async function shipRun(options) {
       message: 'found: ' + failed.map(function (c) { return c.label; }).join(', ') + ' — fixing it',
       failed: failed.map(function (c) { return c.id; }),
     });
+    // Ask the AI to fix exactly what failed, then test again.
     const fixText = await agent(options.model, prompts.buildFixPrompt(failed), runTool, onAgentEvent, { signal: options.signal });
     prompts.parseSummary(fixText).forEach(function (line) { changes.push(line); });
     result = await test(to);
@@ -114,6 +121,7 @@ async function shipRun(options) {
     },
     summary: { changes: changes, tests: result.checks },
   };
+  // The final event: the browser shows the summary and before/after.
   onEvent(shipped);
   return shipped;
 }

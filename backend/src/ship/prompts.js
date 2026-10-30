@@ -20,6 +20,7 @@ Rules:
 // pins: [{ sid, label, text }]
 function buildShipPrompt(pins) {
   const lines = pins.map(function (pin, i) {
+    // e.g. 1. The element with data-sid="hero-title" (it currently says "Rosie's"): make it bigger
     return (i + 1) + '. The element with data-sid="' + pin.sid + '" (it currently says "' + pin.label + '"): ' + pin.text.trim();
   });
   return [
@@ -49,6 +50,7 @@ function buildFixPrompt(failed) {
 function parseSummary(text) {
   const lines = String(text || '').split('\n')
     .map(function (line) { return line.trim(); })
+    // Keep only the lines the AI started with "- ".
     .filter(function (line) { return line.startsWith('- '); })
     .map(function (line) { return line.slice(2).trim(); })
     .filter(Boolean);

@@ -11,13 +11,16 @@ function openSse(res) {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  // Send the headers right away so the browser knows a stream is coming.
   res.flushHeaders();
 
   const controller = new AbortController();
+  // The browser closed the tab or the connection: tell the long job to stop.
   res.on('close', function () { controller.abort(); });
 
   function send(event) {
     if (res.writableEnded) return;
+    // SSE format: each event is one line "data: {...}" followed by a blank line.
     res.write('data: ' + JSON.stringify(event) + '\n\n');
   }
 

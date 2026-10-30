@@ -59,6 +59,7 @@ async function openPage(browser, url, viewport) {
   const context = await browser.newContext({ viewport: viewport, reducedMotion: 'reduce' });
   const page = await context.newPage();
   const errors = [];
+  // Collect JavaScript errors the page throws while loading.
   page.on('pageerror', function (err) { errors.push(err.message); });
   page.on('console', function (msg) {
     // A file that failed to load is reported by its own check (images),
@@ -71,9 +72,11 @@ async function openPage(browser, url, viewport) {
 
 async function runQa(options) {
   const expectedSids = options.expectedSids || [];
+  // Start a hidden Chrome. One browser is reused for both sizes.
   const browser = await playwright.chromium.launch();
   try {
     const desktop = await openPage(browser, options.url, DESKTOP);
+    // evaluate runs findDeadLinks INSIDE the page, then hands its result back to us.
     const deadLinks = await desktop.page.evaluate(findDeadLinks);
     const brokenImages = await desktop.page.evaluate(findBrokenImages);
     const missingSids = await desktop.page.evaluate(findMissingSids, expectedSids);
@@ -81,6 +84,7 @@ async function runQa(options) {
     await desktop.page.screenshot({ path: desktopShot });
 
     const phone = await openPage(browser, options.url, PHONE);
+    // How wide the page really is; wider than the phone means sideways scrolling.
     const pageWidth = await phone.page.evaluate(function () { return document.documentElement.scrollWidth; });
     const phoneShot = path.join(options.shotsDir, 'phone.png');
     await phone.page.screenshot({ path: phoneShot });
@@ -99,6 +103,7 @@ async function runQa(options) {
       shots: { desktop: desktopShot, phone: phoneShot },
     };
   } finally {
+    // Always close Chrome, even if a check crashed (this is inside finally).
     await browser.close();
   }
 }
