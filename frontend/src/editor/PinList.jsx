@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion as Motion } from 'framer-motion';
+import VoiceButton from './VoiceButton';
 
 // The notes in the side rail: one numbered card per pin, with a box to type
 // what should change. The numbers match the dots drawn on the site.
@@ -40,20 +41,40 @@ export default function PinList(props) {
 
 function PinText(props) {
   const ref = useRef(null);
+  const [heardNothing, setHeardNothing] = useState(false);
 
   // Put the cursor in this box when it's the new (or re-clicked) pin.
   useEffect(function () {
     if (props.focused && ref.current) ref.current.focus();
   }, [props.focused]);
 
+  // Spoken words are added to whatever is already typed.
+  function addSpoken(text) {
+    setHeardNothing(false);
+    const before = props.pin.text.trim();
+    props.onChange(props.pin.id, before ? before + ' ' + text : text);
+  }
+
+  // Voice didn't work (mic blocked, no audio, Claude key): fall back to typing.
+  function voiceFailed() {
+    setHeardNothing(true);
+    if (ref.current) ref.current.focus();
+  }
+
   return (
-    <textarea
-      ref={ref}
-      className="ed-pin-text"
-      rows={2}
-      value={props.pin.text}
-      placeholder="What should change? e.g. make this bigger"
-      onChange={function (e) { props.onChange(props.pin.id, e.target.value); }}
-    />
+    <div>
+      <div className="ed-pin-input">
+        <textarea
+          ref={ref}
+          className="ed-pin-text"
+          rows={2}
+          value={props.pin.text}
+          placeholder="Hold the mic and talk, or type: e.g. make this bigger"
+          onChange={function (e) { props.onChange(props.pin.id, e.target.value); }}
+        />
+        <VoiceButton onText={addSpoken} onFail={voiceFailed} />
+      </div>
+      {heardNothing ? <p className="ed-pin-hint">Couldn't hear that — type it instead.</p> : null}
+    </div>
   );
 }

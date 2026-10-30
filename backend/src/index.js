@@ -7,6 +7,7 @@ const dev = require('./routes/dev');
 const blocks = require('./routes/blocks');
 const aiRoutes = require('./routes/ai');
 const build = require('./routes/build');
+const transcribe = require('./routes/transcribe');
 const workspace = require('./workspace/workspace');
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api', dev.router);
 app.use('/api', blocks.router);
 app.use('/api', aiRoutes.createAiRouter());
 app.use('/api', build.createBuildRouter());
+app.use('/api', transcribe.createTranscribeRouter());
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Shipit backend running on port ${PORT}`));
