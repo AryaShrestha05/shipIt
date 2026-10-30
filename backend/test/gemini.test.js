@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { createModel, withRetry } = require('../src/agent/gemini');
+const gemini = require('../src/agent/gemini');
+const createModel = gemini.createModel;
+const withRetry = gemini.withRetry;
 
 // A function that fails with the given errors in order, then returns 'ok'.
 function failing(...messages) {
@@ -52,22 +54,21 @@ function stubGenAI() {
       return {};
     }
   }
-  return { Stub, configs };
+  return { Stub: Stub, configs: configs };
 }
 
 test('createModel without tools sends no tools key', () => {
-  const { Stub, configs } = stubGenAI();
-  createModel({ apiKey: 'k' }, Stub);
-  assert.ok(!('tools' in configs[0]));
+  const stub = stubGenAI();
+  createModel({ apiKey: 'k' }, stub.Stub);
+  assert.ok(!('tools' in stub.configs[0]));
 });
 
 test('createModel defaults to gemini-2.5-flash', () => {
-  const { Stub, configs } = stubGenAI();
+  const stub = stubGenAI();
   const saved = process.env.GEMINI_MODEL;
   delete process.env.GEMINI_MODEL;
-  createModel({ apiKey: 'k', tools: [] }, Stub);
-  process.env.GEMINI_MODEL = saved ?? '';
-  if (saved === undefined) delete process.env.GEMINI_MODEL;
-  assert.strictEqual(configs[0].model, 'gemini-2.5-flash');
-  assert.deepStrictEqual(configs[0].tools, [{ functionDeclarations: [] }]);
+  createModel({ apiKey: 'k', tools: [] }, stub.Stub);
+  if (saved !== undefined) process.env.GEMINI_MODEL = saved;
+  assert.strictEqual(stub.configs[0].model, 'gemini-2.5-flash');
+  assert.deepStrictEqual(stub.configs[0].tools, [{ functionDeclarations: [] }]);
 });

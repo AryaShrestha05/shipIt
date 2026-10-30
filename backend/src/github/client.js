@@ -1,11 +1,11 @@
-const { Octokit } = require('@octokit/rest');
+const octokitRest = require('@octokit/rest');
 const simpleGit = require('simple-git');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
 function createOctokit(token) {
-  return new Octokit({ auth: token });
+  return new octokitRest.Octokit({ auth: token });
 }
 
 async function cloneRepo(repoUrl, token) {
@@ -22,26 +22,33 @@ async function getRepoInfo(repoUrl) {
   return { owner: match[1], repo: match[2] };
 }
 
-async function createPR({ token, owner, repo, branchName, title, body, baseBranch = 'main' }) {
-  const octokit = createOctokit(token);
-  const { data } = await octokit.pulls.create({
-    owner,
-    repo,
-    title,
-    body,
-    head: branchName,
-    base: baseBranch,
+// options: token, owner, repo, branchName, title, body, baseBranch (default 'main')
+async function createPR(options) {
+  const octokit = createOctokit(options.token);
+  const response = await octokit.pulls.create({
+    owner: options.owner,
+    repo: options.repo,
+    title: options.title,
+    body: options.body,
+    head: options.branchName,
+    base: options.baseBranch || 'main',
   });
-  return data.html_url;
+  return response.data.html_url;
 }
 
-async function pushBranch({ repoPath, branchName, token, owner, repo, commitMessage }) {
-  const git = simpleGit(repoPath);
-  await git.checkoutLocalBranch(branchName);
+// options: repoPath, branchName, token, owner, repo, commitMessage
+async function pushBranch(options) {
+  const git = simpleGit(options.repoPath);
+  await git.checkoutLocalBranch(options.branchName);
   await git.add('.');
-  await git.commit(commitMessage);
-  const remote = `https://x-access-token:${token}@github.com/${owner}/${repo}.git`;
-  await git.push(remote, branchName);
+  await git.commit(options.commitMessage);
+  const remote = `https://x-access-token:${options.token}@github.com/${options.owner}/${options.repo}.git`;
+  await git.push(remote, options.branchName);
 }
 
-module.exports = { cloneRepo, getRepoInfo, createPR, pushBranch };
+module.exports = {
+  cloneRepo: cloneRepo,
+  getRepoInfo: getRepoInfo,
+  createPR: createPR,
+  pushBranch: pushBranch,
+};

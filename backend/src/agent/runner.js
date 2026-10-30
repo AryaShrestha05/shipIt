@@ -1,7 +1,7 @@
 const path = require('path');
-const { toolDeclarations, createToolRunner } = require('./tools');
-const { createModel, SYSTEM_INSTRUCTION } = require('./gemini');
-const { runAgent } = require('./loop');
+const tools = require('./tools');
+const gemini = require('./gemini');
+const loop = require('./loop');
 
 // Orchestrator: wires model + tools + loop for one agent run.
 // Block 1 keeps it simple — uses the local sandbox folder.
@@ -9,13 +9,13 @@ const { runAgent } = require('./loop');
 const SANDBOX = path.join(__dirname, '..', '..', 'sandbox');
 
 async function runOnce(prompt, onEvent) {
-  const model = createModel({
+  const model = gemini.createModel({
     apiKey: process.env.GEMINI_API_KEY,
-    tools: toolDeclarations,
-    systemInstruction: SYSTEM_INSTRUCTION,
+    tools: tools.toolDeclarations,
+    systemInstruction: gemini.SYSTEM_INSTRUCTION,
   });
-  const runTool = createToolRunner(SANDBOX);
-  return runAgent(model, prompt, runTool, onEvent);
+  const runTool = tools.createToolRunner(SANDBOX);
+  return loop.runAgent(model, prompt, runTool, onEvent);
 }
 
-module.exports = { runOnce };
+module.exports = { runOnce: runOnce };

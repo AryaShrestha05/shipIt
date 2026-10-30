@@ -3,11 +3,11 @@ const assert = require('node:assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { createToolRunner } = require('../src/agent/tools');
+const tools = require('../src/agent/tools');
 
 function tempRunner() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'shipit-tools-'));
-  return createToolRunner(root);
+  return tools.createToolRunner(root);
 }
 
 test('refuses to read outside the workspace', () => {

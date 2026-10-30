@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from './Icon';
 import { Btn } from './primitives/Btn';
 
-export const TopBar = ({ onTweaks }) => (
+export const TopBar = (props) => (
   <header style={{
     height: 52, borderBottom: '1px solid var(--line-soft)',
     display: 'flex', alignItems: 'center', padding: '0 18px',
@@ -43,7 +43,7 @@ export const TopBar = ({ onTweaks }) => (
 
     <div style={{ width: 1, height: 22, background: 'var(--line-soft)' }} />
 
-    <Btn icon="sliders" size="sm" onClick={onTweaks}>Tweaks</Btn>
+    <Btn icon="sliders" size="sm" onClick={props.onTweaks}>Tweaks</Btn>
 
     <div style={{
       width: 30, height: 30, borderRadius: '50%',

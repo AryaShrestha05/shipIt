@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const googleAI = require('@google/generative-ai');
 
 // Creates a Gemini model. Separated from the loop so we can swap models
 // (via GEMINI_MODEL) or providers without touching the agent logic.
@@ -17,28 +17,51 @@ Hard rules:
 
 const DEFAULT_MODEL = 'gemini-2.5-flash';
 
+// options:
+//   apiKey            — the Gemini API key (required)
+//   tools             — tool declarations the model may call (optional)
+//   systemInstruction — the model's rulebook (optional)
+//   modelName         — which Gemini model (optional; GEMINI_MODEL env or DEFAULT_MODEL)
 // genAIClass is only swapped out in tests.
-function createModel({ apiKey, tools, systemInstruction, modelName = process.env.GEMINI_MODEL || DEFAULT_MODEL }, genAIClass = GoogleGenerativeAI) {
-  const genAI = new genAIClass(apiKey);
+function createModel(options, genAIClass) {
+  if (!genAIClass) genAIClass = googleAI.GoogleGenerativeAI;
+  const modelName = options.modelName || process.env.GEMINI_MODEL || DEFAULT_MODEL;
+
+  const genAI = new genAIClass(options.apiKey);
   const config = { model: modelName };
-  if (tools) config.tools = [{ functionDeclarations: tools }];
-  if (systemInstruction) config.systemInstruction = systemInstruction;
+  if (options.tools) config.tools = [{ functionDeclarations: options.tools }];
+  if (options.systemInstruction) config.systemInstruction = options.systemInstruction;
   return genAI.getGenerativeModel(config);
 }
 
 // Rate limits (429) and overloaded servers (503) are temporary, so wait and
 // try again: 800ms, 1.6s, 3.2s... Any other error is a real bug — fail fast.
-const isTemporary = (err) => /\b(429|503)\b/.test(String(err?.message));
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function isTemporary(err) {
+  return /\b(429|503)\b/.test(String(err && err.message));
+}
 
-async function withRetry(fn, { retries = 3, baseMs = 800, onFallback } = {}) {
+function sleep(ms) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, ms);
+  });
+}
+
+// options:
+//   retries    — how many times to try again (default 3)
+//   baseMs     — first wait in milliseconds, doubles each time (default 800)
+//   onFallback — called once if every retry failed; its result is returned (optional)
+async function withRetry(fn, options) {
+  if (!options) options = {};
+  const retries = options.retries === undefined ? 3 : options.retries;
+  const baseMs = options.baseMs === undefined ? 800 : options.baseMs;
+
   for (let attempt = 0; ; attempt++) {
     try {
       return await fn();
     } catch (err) {
       if (!isTemporary(err)) throw err;
       if (attempt >= retries) {
-        if (onFallback) return onFallback();
+        if (options.onFallback) return options.onFallback();
         throw err;
       }
       await sleep(baseMs * 2 ** attempt);
@@ -46,4 +69,9 @@ async function withRetry(fn, { retries = 3, baseMs = 800, onFallback } = {}) {
   }
 }
 
-module.exports = { createModel, withRetry, SYSTEM_INSTRUCTION, DEFAULT_MODEL };
+module.exports = {
+  createModel: createModel,
+  withRetry: withRetry,
+  SYSTEM_INSTRUCTION: SYSTEM_INSTRUCTION,
+  DEFAULT_MODEL: DEFAULT_MODEL,
+};

@@ -1,4 +1,4 @@
-const { withRetry } = require('./gemini');
+const gemini = require('./gemini');
 
 // The agent loop — the "brain". Pure logic, no I/O.
 //
@@ -8,54 +8,68 @@ const { withRetry } = require('./gemini');
 //   runTool  — function that actually executes tool calls (from tools.js)
 //   onEvent  — callback, called on every step (prompt, tool_call,
 //              tool_result, error, done). Streams live updates to the browser.
-//   options  — { maxSteps, signal }: a cap on tool calls so a confused model
-//              can't loop forever, and an AbortSignal so a closed browser tab
-//              stops the run.
-async function runAgent(model, prompt, runTool, onEvent = () => {}, { maxSteps = 25, signal } = {}) {
+//   options  — maxSteps: a cap on tool calls so a confused model can't loop
+//              forever (default 25). signal: an AbortSignal so a closed
+//              browser tab stops the run (optional).
+async function runAgent(model, prompt, runTool, onEvent, options) {
+  if (!onEvent) onEvent = function () {};
+  if (!options) options = {};
+  const maxSteps = options.maxSteps || 25;
+  const signal = options.signal;
+
+  function stopped() {
+    return Boolean(signal && signal.aborted);
+  }
+
   const chat = model.startChat();
 
   onEvent({ type: 'user_prompt', content: prompt });
 
-  let result = await withRetry(() => chat.sendMessage(prompt));
+  let result = await gemini.withRetry(function () {
+    return chat.sendMessage(prompt);
+  });
   //gemini returns an array of the tools that it wants to run, or nothing.
-  //?? [] turns "nothing" into an empty list so the loop just ends.
-  let calls = result.response.functionCalls() ?? [];
+  //|| [] turns "nothing" into an empty list so the loop just ends.
+  let calls = result.response.functionCalls() || [];
   let step = 0;
 
   while (calls.length > 0) {
-    if (signal?.aborted) break;
+    if (stopped()) break;
     if (step >= maxSteps) {
-      onEvent({ type: 'error', message: `Stopped: hit the step limit (${maxSteps})` });
+      onEvent({ type: 'error', message: 'Stopped: hit the step limit (' + maxSteps + ')' });
       break;
     }
 
     // Gemini can ask for several tools in one turn; every one needs an answer.
     const responses = [];
     for (const call of calls) {
-      if (step >= maxSteps || signal?.aborted) break;
+      if (step >= maxSteps || stopped()) break;
       step++;
-      onEvent({ type: 'tool_call', step, name: call.name, args: call.args });
+      onEvent({ type: 'tool_call', step: step, name: call.name, args: call.args });
 
       let toolOutput;
       try {
         toolOutput = runTool(call);
       } catch (err) {
-        toolOutput = `ERROR: ${err.message}`;
+        toolOutput = 'ERROR: ' + err.message;
       }
-      onEvent({ type: 'tool_result', step, name: call.name, output: toolOutput });
+      onEvent({ type: 'tool_result', step: step, name: call.name, output: toolOutput });
 
       responses.push({ functionResponse: { name: call.name, response: { content: toolOutput } } });
     }
-    if (signal?.aborted) break;
+    if (stopped()) break;
 
-    result = await withRetry(() => chat.sendMessage(responses));
-    calls = result.response.functionCalls() ?? [];
+    result = await gemini.withRetry(function () {
+      return chat.sendMessage(responses);
+    });
+    calls = result.response.functionCalls() || [];
   }
 
   // After an early stop the last response is a tool request, not text.
-  const finalText = calls.length > 0 ? '' : result.response.text();
+  let finalText = '';
+  if (calls.length === 0) finalText = result.response.text();
   onEvent({ type: 'done', text: finalText });
   return finalText;
 }
 
-module.exports = { runAgent };
+module.exports = { runAgent: runAgent };

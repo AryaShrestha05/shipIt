@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { runAgent } = require('../src/agent/loop');
+const loop = require('../src/agent/loop');
+const runAgent = loop.runAgent;
 
 // Fake Gemini model: replays scripted turns and records what the loop sent.
 // A turn is either an array of function calls or a final text string.
@@ -28,7 +29,9 @@ function fakeModel(turns) {
   };
 }
 
-const call = (name, args = {}) => ({ name, args });
+function call(name, args) {
+  return { name: name, args: args || {} };
+}
 
 test('returns tool errors to the model instead of throwing', async () => {
   const model = fakeModel([[call('read_file', { file_path: 'x' })], 'done']);

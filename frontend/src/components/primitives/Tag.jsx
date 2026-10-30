@@ -1,4 +1,6 @@
-export const Tag = ({ children, tone = 'neutral', mono = true, style }) => {
+export const Tag = (props) => {
+  const tone = props.tone || 'neutral';
+  const mono = props.mono === undefined ? true : props.mono;
   const tones = {
     neutral: { bg: 'var(--bg-2)', fg: 'var(--fg-1)', bd: 'var(--line)' },
     accent:  { bg: 'var(--acc-soft)', fg: 'var(--acc)', bd: 'var(--acc-line)' },
@@ -16,7 +18,7 @@ export const Tag = ({ children, tone = 'neutral', mono = true, style }) => {
       letterSpacing: mono ? '0.02em' : '0',
       display: 'inline-flex', alignItems: 'center', gap: 5,
       whiteSpace: 'nowrap',
-      ...style,
-    }}>{children}</span>
+      ...props.style,
+    }}>{props.children}</span>
   );
 };

@@ -1,5 +1,5 @@
 const express = require('express');
-const { runOnce } = require('../agent/runner');
+const runner = require('../agent/runner');
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 // browser blank until it's done. SSE keeps the HTTP connection open and
 // writes each event the instant it happens, so the UI fills in live.
 router.post('/run', async (req, res) => {
-  const { prompt } = req.body || {};
+  const prompt = req.body ? req.body.prompt : undefined;
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'prompt is required' });
   }
@@ -25,7 +25,7 @@ router.post('/run', async (req, res) => {
   };
 
   try {
-    await runOnce(prompt, send);
+    await runner.runOnce(prompt, send);
   } catch (err) {
     send({ type: 'error', message: err.message });
   } finally {

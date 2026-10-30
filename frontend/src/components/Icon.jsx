@@ -1,5 +1,7 @@
-export const Icon = ({ name, size = 16, style }) => {
-  const s = { width: size, height: size, display: 'block', ...style };
+export const Icon = (props) => {
+  const name = props.name;
+  const size = props.size || 16;
+  const s = { width: size, height: size, display: 'block', ...props.style };
   const p = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' };
   switch (name) {
     case 'plan':   return <svg viewBox="0 0 24 24" style={s}><circle cx="12" cy="12" r="8" {...p}/><path d="M12 4v4M12 16v4M4 12h4M16 12h4" {...p}/></svg>;

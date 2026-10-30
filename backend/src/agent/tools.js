@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const childProcess = require('child_process');
 
 // ===== Tool descriptions (the "menu" we give Gemini) =====
 const toolDeclarations = [
@@ -70,7 +70,7 @@ function createToolRunner(rootPath) {
 
   function runCommand(args) {
     try {
-      const output = execSync(args.command, {
+      const output = childProcess.execSync(args.command, {
         cwd: rootPath,
         timeout: 15000,
         encoding: 'utf8',
@@ -96,4 +96,7 @@ function createToolRunner(rootPath) {
   };
 }
 
-module.exports = { toolDeclarations, createToolRunner };
+module.exports = {
+  toolDeclarations: toolDeclarations,
+  createToolRunner: createToolRunner,
+};

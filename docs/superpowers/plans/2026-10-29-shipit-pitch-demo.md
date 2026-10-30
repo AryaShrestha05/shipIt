@@ -20,6 +20,7 @@
 - Editable template elements carry a stable `data-sid` attribute; agents must never remove or rename them.
 - Preview updates only when Ship finishes (new version folder); never show a half-edited version.
 - Voice uses `MediaRecorder` + Gemini transcription (not Web Speech API).
+- **Plain code style (user rule):** no destructuring (`const { a } = x`, `function f({ a })`, `const { a } = require(...)`) — use `const mod = require(...)` + `mod.a`, a single `options`/`props` parameter read as `options.a`, defaults set with plain `if`/`||`. No `?.` or `??`. Write object keys out (`{ step: step }`). Only exception: React's `const [value, setValue] = useState(...)`. Signatures in this plan written with braces mean "an options object with these fields".
 - **Working style:** implement one task at a time; after each task, stop and explain to the user in plain words what was built, which files, and how data flows, before starting the next.
 
 ## Review Focus
