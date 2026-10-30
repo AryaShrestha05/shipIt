@@ -1,14 +1,12 @@
-import { Routes, Route } from 'react-router-dom';
-import Landing from './routes/Landing';
-import Agent from './routes/Agent';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Dev from './routes/Dev';
 import Blocks from './routes/Blocks';
 
+// "/" goes to the dev page until the real landing page (Feature 13) exists.
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/agent" element={<Agent />} />
+      <Route path="/" element={<Navigate to="/dev" replace />} />
       <Route path="/dev" element={<Dev />} />
       <Route path="/blocks" element={<Blocks />} />
     </Routes>
