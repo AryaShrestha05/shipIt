@@ -120,13 +120,16 @@ function siteFiles(theme) {
 }
 
 // Writes a finished site into a folder: index.html, the three site files,
-// and layout.json (so we always know which sections a site was built from).
+// an empty custom.css (Ship puts style changes there, so the shared
+// stylesheets are never rewritten), and layout.json (so we always know which
+// sections a site was built from).
 function writeSite(dir, layout, business) {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), composeSite(layout, business), 'utf8');
   for (const file of siteFiles(layout.theme)) {
     fs.copyFileSync(file.from, path.join(dir, file.to));
   }
+  fs.writeFileSync(path.join(dir, 'custom.css'), '/* Changes made with ShipIt go here. */\n', 'utf8');
   fs.writeFileSync(path.join(dir, 'layout.json'), JSON.stringify(layout, null, 2), 'utf8');
 }
 

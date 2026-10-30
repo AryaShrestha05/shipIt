@@ -28,3 +28,18 @@ test('write_file then read_file round-trips', () => {
   const out = runTool({ name: 'read_file', args: { file_path: 'a/b.txt' } });
   assert.strictEqual(out, 'hi');
 });
+
+test('edit_file replaces one exact piece of text', () => {
+  const runTool = tempRunner();
+  runTool({ name: 'write_file', args: { file_path: 'index.html', content: '<h1>Old title</h1><p>keep</p>' } });
+  const out = runTool({ name: 'edit_file', args: { file_path: 'index.html', old_text: 'Old title', new_text: 'New title' } });
+  assert.match(out, /^Edited/);
+  assert.strictEqual(runTool({ name: 'read_file', args: { file_path: 'index.html' } }), '<h1>New title</h1><p>keep</p>');
+});
+
+test('edit_file refuses text that is missing or appears more than once', () => {
+  const runTool = tempRunner();
+  runTool({ name: 'write_file', args: { file_path: 'a.html', content: '<p>x</p><p>x</p>' } });
+  assert.match(runTool({ name: 'edit_file', args: { file_path: 'a.html', old_text: 'nope', new_text: 'y' } }), /^ERROR:.*not found/);
+  assert.match(runTool({ name: 'edit_file', args: { file_path: 'a.html', old_text: '<p>x</p>', new_text: 'y' } }), /^ERROR:.*2 times/);
+});

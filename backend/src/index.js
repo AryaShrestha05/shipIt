@@ -2,12 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const runRouter = require('./routes/run');
 const dev = require('./routes/dev');
 const blocks = require('./routes/blocks');
 const aiRoutes = require('./routes/ai');
 const build = require('./routes/build');
 const transcribe = require('./routes/transcribe');
+const shipRoutes = require('./routes/ship');
 const workspace = require('./workspace/workspace');
 
 const app = express();
@@ -18,12 +18,12 @@ app.use(express.json({ limit: '15mb' })); // photos and voice clips arrive as te
 app.use('/preview', express.static(workspace.WORKSPACES_DIR));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
-app.use('/api', runRouter);
 app.use('/api', dev.router);
 app.use('/api', blocks.router);
 app.use('/api', aiRoutes.createAiRouter());
 app.use('/api', build.createBuildRouter());
 app.use('/api', transcribe.createTranscribeRouter());
+app.use('/api', shipRoutes.createShipRouter());
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Shipit backend running on port ${PORT}`));

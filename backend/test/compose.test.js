@@ -93,3 +93,11 @@ for (const theme of Object.keys(compose.THEMES)) {
     for (const f of files) assert.ok(fs.existsSync(f.from), f.from);
   });
 }
+
+test('writeSite adds an empty custom.css that the page loads last', () => {
+  const dir = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'shipit-site-'));
+  compose.writeSite(dir, { theme: 'hearth', sections: ['hero-split'] }, require('../src/templates/sample').SAMPLE_BUSINESS);
+  const html = require('fs').readFileSync(require('path').join(dir, 'index.html'), 'utf8');
+  assert.ok(require('fs').existsSync(require('path').join(dir, 'custom.css')));
+  assert.ok(html.indexOf('href="custom.css"') > html.indexOf('href="theme.css"'));
+});

@@ -28,6 +28,19 @@ const toolDeclarations = [
     },
   },
   {
+    name: 'edit_file',
+    description: 'Replaces one exact piece of text in a file. old_text must appear exactly once. Prefer this over write_file for small changes.',
+    parameters: {
+      type: 'object',
+      properties: {
+        file_path: { type: 'string' },
+        old_text: { type: 'string', description: 'The exact text to find (copy it from read_file)' },
+        new_text: { type: 'string', description: 'What to put in its place' },
+      },
+      required: ['file_path', 'old_text', 'new_text'],
+    },
+  },
+  {
     name: 'run_command',
     description: 'Runs a shell command in the repo and returns its output.',
     parameters: {
@@ -68,6 +81,18 @@ function createToolRunner(rootPath) {
     return `Wrote ${args.file_path} (${args.content.length} chars)`;
   }
 
+  // Small, safe edits: the AI copies the exact text it wants to change, so it
+  // never has to re-type (and possibly cut short) a whole long file.
+  function editFile(args) {
+    const fullPath = resolveInside(args.file_path);
+    const content = fs.readFileSync(fullPath, 'utf8');
+    const count = content.split(args.old_text).length - 1;
+    if (!args.old_text || count === 0) throw new Error('old_text not found in ' + args.file_path);
+    if (count > 1) throw new Error('old_text appears ' + count + ' times in ' + args.file_path + '; include more surrounding text');
+    fs.writeFileSync(fullPath, content.replace(args.old_text, function () { return args.new_text; }), 'utf8');
+    return 'Edited ' + args.file_path;
+  }
+
   function runCommand(args) {
     try {
       const output = childProcess.execSync(args.command, {
@@ -88,6 +113,7 @@ function createToolRunner(rootPath) {
     try {
       if (call.name === 'read_file') return readFile(call.args);
       if (call.name === 'write_file') return writeFile(call.args);
+      if (call.name === 'edit_file') return editFile(call.args);
       if (call.name === 'run_command') return runCommand(call.args);
       throw new Error(`Unknown tool: ${call.name}`);
     } catch (err) {
