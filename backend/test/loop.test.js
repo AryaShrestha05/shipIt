@@ -71,6 +71,24 @@ test('stops after maxSteps', async () => {
   assert.strictEqual(events.at(-1).type, 'done');
 });
 
+test('retries a rate-limited message instead of failing the run', async () => {
+  const model = fakeModel(['done']);
+  const chat = model.startChat();
+  let attempts = 0;
+  model.startChat = () => ({
+    sendMessage: async (payload) => {
+      attempts++;
+      if (attempts === 1) throw new Error('429 Too Many Requests');
+      return chat.sendMessage(payload);
+    },
+  });
+
+  const text = await runAgent(model, 'go', () => 'ok');
+
+  assert.strictEqual(text, 'done');
+  assert.strictEqual(attempts, 2);
+});
+
 test('stops when signal aborts', async () => {
   const model = fakeModel([[call('run_command')]]);
   const ctrl = new AbortController();

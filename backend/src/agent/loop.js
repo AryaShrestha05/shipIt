@@ -1,3 +1,5 @@
+const { withRetry } = require('./gemini');
+
 // The agent loop — the "brain". Pure logic, no I/O.
 //
 // Caller provides:
@@ -14,7 +16,7 @@ async function runAgent(model, prompt, runTool, onEvent = () => {}, { maxSteps =
 
   onEvent({ type: 'user_prompt', content: prompt });
 
-  let result = await chat.sendMessage(prompt);
+  let result = await withRetry(() => chat.sendMessage(prompt));
   //gemini returns an array of the tools that it wants to run, or nothing.
   //?? [] turns "nothing" into an empty list so the loop just ends.
   let calls = result.response.functionCalls() ?? [];
@@ -46,7 +48,7 @@ async function runAgent(model, prompt, runTool, onEvent = () => {}, { maxSteps =
     }
     if (signal?.aborted) break;
 
-    result = await chat.sendMessage(responses);
+    result = await withRetry(() => chat.sendMessage(responses));
     calls = result.response.functionCalls() ?? [];
   }
 

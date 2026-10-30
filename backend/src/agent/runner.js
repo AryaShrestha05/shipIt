@@ -1,6 +1,6 @@
 const path = require('path');
 const { toolDeclarations, createToolRunner } = require('./tools');
-const { createModel } = require('./gemini');
+const { createModel, SYSTEM_INSTRUCTION } = require('./gemini');
 const { runAgent } = require('./loop');
 
 // Orchestrator: wires model + tools + loop for one agent run.
@@ -12,6 +12,7 @@ async function runOnce(prompt, onEvent) {
   const model = createModel({
     apiKey: process.env.GEMINI_API_KEY,
     tools: toolDeclarations,
+    systemInstruction: SYSTEM_INSTRUCTION,
   });
   const runTool = createToolRunner(SANDBOX);
   return runAgent(model, prompt, runTool, onEvent);
