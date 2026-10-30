@@ -88,7 +88,7 @@ frontend/
 | `shipped` | `runId, version, previewUrl, beforeShot, afterShot, summary: {changes: string[], tests: {label, ok}[]}` | ship |
 | `error` | `message` | any |
 
-`Business` = `{ name: string, tagline: string, vibe: 'warm'|'minimal', palette: { bg, ink, accent } (hex), items: {name, price, note}[] (max 8), hours: string, address: string }`
+`Business` = `{ name: string, tagline: string, vibe: 'warm'|'minimal', palette: { bg, ink, accent } (hex), items: {name, price, note}[] (max 8), hours: string, address: string, copy: { heroEyebrow, heroCta, ctaLabel, itemsNav, itemsEyebrow, itemsTitle, itemsSub, highlightLabel, highlightNote, quote, visitTitle, footerNote } (strings fitting the kind of business; missing keys fall back to `fill.DEFAULT_COPY`) }`
 
 ---
 

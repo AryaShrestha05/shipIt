@@ -6,11 +6,31 @@ const path = require('path');
 // Template rules:
 //   {{name}} {{tagline}} {{hours}} {{address}}  — business details
 //   {{bg}} {{ink}} {{accent}}                   — colors (used in a <style> block)
-//   <!--items--> ... <!--/items-->              — one menu row, repeated per item.
+//   <!--items--> ... <!--/items-->              — one row, repeated per item.
 //     Inside it: {{item.name}} {{item.price}} {{item.note}} and {{i}} (0, 1, 2...)
+//   {{heroEyebrow}} {{itemsTitle}} ...          — wording that depends on the kind
+//     of business ("What we're baking" vs "Our services"). Comes from
+//     business.copy; anything missing uses DEFAULT_COPY.
 
 const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
 const TEMPLATE_IDS = ['hearth', 'atelier'];
+
+// Neutral wording that fits any small business, used when business.copy
+// doesn't say otherwise.
+const DEFAULT_COPY = {
+  heroEyebrow: 'Locally owned',
+  heroCta: 'See what we offer',
+  ctaLabel: 'Get in touch',
+  itemsNav: 'Offerings',
+  itemsEyebrow: 'What we do',
+  itemsTitle: 'What we offer',
+  itemsSub: 'Everything we make, in one place.',
+  highlightLabel: 'Open',
+  highlightNote: 'Stop by and say hello.',
+  quote: 'We do one thing, and we do it with care.',
+  visitTitle: 'Come visit',
+  footerNote: 'Thank you for supporting local.',
+};
 
 // Turns characters that mean something in HTML into safe text, so a business
 // name like "<script>" shows up as words instead of running as code.
@@ -53,8 +73,16 @@ function fillItems(html, items) {
 
 function fillTemplate(html, business) {
   const palette = business.palette || {};
+  const copy = business.copy || {};
   const withItems = fillItems(html, business.items || []);
-  return replaceAll(withItems, {
+
+  const values = {};
+  for (const key of Object.keys(DEFAULT_COPY)) {
+    values[key] = copy[key] || DEFAULT_COPY[key];
+  }
+  const withCopy = replaceAll(withItems, values);
+
+  return replaceAll(withCopy, {
     name: business.name,
     tagline: business.tagline,
     hours: business.hours,
@@ -73,6 +101,7 @@ function pickTemplate(business) {
 module.exports = {
   TEMPLATES_DIR: TEMPLATES_DIR,
   TEMPLATE_IDS: TEMPLATE_IDS,
+  DEFAULT_COPY: DEFAULT_COPY,
   escapeHtml: escapeHtml,
   fillTemplate: fillTemplate,
   pickTemplate: pickTemplate,

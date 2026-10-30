@@ -14,29 +14,29 @@
   <nav class="nav">
     <a class="nav-brand" data-sid="nav-brand" href="#top">{{name}}</a>
     <div class="nav-links">
-      <a data-sid="nav-menu" href="#menu">Menu</a>
+      <a data-sid="nav-menu" href="#menu">{{itemsNav}}</a>
       <a data-sid="nav-visit" href="#visit">Visit</a>
     </div>
     <a class="pill" data-sid="cta-order" href="#visit">
-      Find us <span class="pill-icon" aria-hidden="true">↗</span>
+      {{ctaLabel}} <span class="pill-icon" aria-hidden="true">↗</span>
     </a>
   </nav>
 
   <header class="hero" id="top">
-    <span class="eyebrow" data-sid="hero-eyebrow">Small batch · Baked daily</span>
+    <span class="eyebrow" data-sid="hero-eyebrow">{{heroEyebrow}}</span>
     <h1 class="hero-title" data-sid="hero-title">{{name}}</h1>
     <div class="hero-foot">
       <p class="hero-tagline" data-sid="hero-tagline">{{tagline}}</p>
       <a class="pill pill-accent" data-sid="hero-cta" href="#menu">
-        View the menu <span class="pill-icon" aria-hidden="true">↓</span>
+        {{heroCta}} <span class="pill-icon" aria-hidden="true">↓</span>
       </a>
     </div>
   </header>
 
   <section class="menu" id="menu">
     <div class="menu-head">
-      <h2 data-sid="menu-title">The menu</h2>
-      <p class="menu-sub" data-sid="menu-sub">Made in the morning. Gone by the afternoon.</p>
+      <h2 data-sid="menu-title">{{itemsTitle}}</h2>
+      <p class="menu-sub" data-sid="menu-sub">{{itemsSub}}</p>
     </div>
     <ol class="menu-list"><!--items--><li class="menu-item" data-sid="item-{{i}}">
         <span class="menu-name">{{item.name}}</span>
@@ -48,8 +48,8 @@
   <section class="bento">
     <div class="shell bento-big">
       <div class="core">
-        <span class="eyebrow" data-sid="bento-eyebrow">Our craft</span>
-        <p class="bento-quote" data-sid="bento-quote">Flour, water, salt, time. <em>Mostly time.</em></p>
+        <span class="eyebrow" data-sid="bento-eyebrow">Our story</span>
+        <p class="bento-quote" data-sid="bento-quote">{{quote}}</p>
       </div>
     </div>
     <div class="shell bento-small" id="visit">
@@ -68,7 +68,7 @@
 
   <footer class="footer">
     <span data-sid="footer-name">{{name}}</span>
-    <span data-sid="footer-note">Thank you for buying local.</span>
+    <span data-sid="footer-note">{{footerNote}}</span>
   </footer>
 </body>
 </html>

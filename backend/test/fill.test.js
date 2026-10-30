@@ -58,6 +58,30 @@ test('zero items leaves the menu empty without crashing', () => {
   assert.ok(html.includes('<ul></ul>'));
 });
 
+test('fills the business-specific wording from business.copy', () => {
+  const b = business([]);
+  b.copy = { itemsTitle: 'Our services' };
+  const html = fill.fillTemplate('<h2>{{itemsTitle}}</h2>', b);
+  assert.strictEqual(html, '<h2>Our services</h2>');
+});
+
+test('missing wording falls back to neutral defaults', () => {
+  const html = fill.fillTemplate('<h2>{{itemsTitle}}</h2><a>{{ctaLabel}}</a>', business([]));
+  assert.ok(!html.includes('{{'));
+  assert.strictEqual(html, '<h2>' + fill.DEFAULT_COPY.itemsTitle + '</h2><a>' + fill.DEFAULT_COPY.ctaLabel + '</a>');
+});
+
+for (const id of ['hearth', 'atelier']) {
+  test('"' + id + '" filled for a salon has no bakery words left', () => {
+    const file = path.join(fill.TEMPLATES_DIR, id, 'index.html');
+    const html = fill.fillTemplate(fs.readFileSync(file, 'utf8'), sample.SAMPLE_SALON).toLowerCase();
+    for (const word of ['bak', 'oven', 'croissant', 'flour', 'butter', 'the menu']) {
+      assert.ok(!html.includes(word), 'found "' + word + '"');
+    }
+    assert.ok(html.includes('balayage'));
+  });
+}
+
 test('pickTemplate chooses atelier for a minimal vibe and hearth otherwise', () => {
   assert.strictEqual(fill.pickTemplate({ vibe: 'minimal' }), 'atelier');
   assert.strictEqual(fill.pickTemplate({ vibe: 'warm' }), 'hearth');

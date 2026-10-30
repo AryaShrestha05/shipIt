@@ -4,14 +4,16 @@ import { useState } from 'react';
 // we can try it before the real editor exists. Open it at /dev.
 
 const TEMPLATES = ['hearth', 'atelier'];
+const SAMPLES = ['bakery', 'salon'];
 
 export default function Dev() {
   // useState gives back two things in a list: the current value, and a
   // function to change it. Calling setTemplate re-draws the page.
   const [template, setTemplate] = useState('hearth');
+  const [sample, setSample] = useState('bakery');
   const [width, setWidth] = useState(1280);
 
-  const src = '/api/dev/template/' + template + '/index.html';
+  const src = '/api/dev/template/' + template + '/index.html?sample=' + sample;
 
   return (
     <div style={{ background: '#fff', color: '#000', minHeight: '100vh', padding: 16, fontFamily: 'monospace' }}>
@@ -22,6 +24,12 @@ export default function Dev() {
         Template:{' '}
         <select value={template} onChange={function (e) { setTemplate(e.target.value); }}>
           {TEMPLATES.map(function (id) {
+            return <option key={id} value={id}>{id}</option>;
+          })}
+        </select>{' '}
+        Business:{' '}
+        <select value={sample} onChange={function (e) { setSample(e.target.value); }}>
+          {SAMPLES.map(function (id) {
             return <option key={id} value={id}>{id}</option>;
           })}
         </select>{' '}

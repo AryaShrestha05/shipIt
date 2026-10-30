@@ -25,6 +25,14 @@ test('serves a template filled with the sample bakery', async () => {
   assert.ok(!html.includes('{{'));
 });
 
+test('?sample=salon fills the template with the salon instead', async () => {
+  const s = await startServer();
+  const res = await fetch(s.base + '/api/dev/template/hearth/index.html?sample=salon');
+  const html = await res.text();
+  s.server.close();
+  assert.ok(html.includes('Studio Nova'));
+});
+
 test('serves the template stylesheet', async () => {
   const s = await startServer();
   const res = await fetch(s.base + '/api/dev/template/atelier/styles.css');

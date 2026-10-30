@@ -9,12 +9,16 @@ const sample = require('../templates/sample');
 const router = express.Router();
 
 // GET /api/dev/template/hearth/index.html — the template filled with Rosie's Bakery
+// GET /api/dev/template/hearth/index.html?sample=salon — filled with Studio Nova
 router.get('/dev/template/:id/index.html', function (req, res) {
   const id = req.params.id;
   if (!fill.TEMPLATE_IDS.includes(id)) return res.status(404).send('Unknown template');
 
+  let business = sample.SAMPLE_BUSINESS;
+  if (req.query.sample === 'salon') business = sample.SAMPLE_SALON;
+
   const file = path.join(fill.TEMPLATES_DIR, id, 'index.html');
-  const html = fill.fillTemplate(fs.readFileSync(file, 'utf8'), sample.SAMPLE_BUSINESS);
+  const html = fill.fillTemplate(fs.readFileSync(file, 'utf8'), business);
   res.type('html').send(html);
 });
 
