@@ -53,10 +53,9 @@ const toolDeclarations = [
   },
 ];
 
-// ===== Factory: builds a dispatcher bound to a specific folder =====
-// We use a factory so the same tools can work on different repos (the sandbox
-// for testing, or a cloned GitHub repo later). The "hands" always know which
-// folder they're operating in.
+// ===== Factory: builds a tool runner locked to one folder =====
+// Each Ship gets a runner for its own new version folder (e.g. v2), so the AI
+// can only ever touch that copy of the site.
 function createToolRunner(rootPath) {
   const root = path.resolve(rootPath);
 

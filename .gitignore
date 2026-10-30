@@ -1,35 +1,34 @@
 # Dependencies
 node_modules/
 
-# Environment variables (NEVER commit these!)
+# Secrets — never commit these. backend/.env.example shows what goes in .env.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Build output
 dist/
 build/
-.next/
+coverage/
+
+# Generated at runtime: built sites, screenshots and recorded runs
+backend/workspaces/
+backend/recordings/
+test-results/
+playwright-report/
 
 # Logs
 *.log
 npm-debug.log*
 
-# OS
+# OS and editors
 .DS_Store
 Thumbs.db
-
-# Editor
 .vscode/
 .idea/
 
-# Temp
+# Local tool settings and scratch
+.claude/settings.local.json
+.superpowers/
 tmp/
 temp/
-
-# Brainstorm mockups
-.superpowers/
-
-# Generated sites and recorded runs
-backend/workspaces/
-backend/recordings/

@@ -38,25 +38,55 @@ You need **Node.js** installed (`node -v` should print a version).
 # 1. Backend (the "kitchen") — terminal window 1
 cd backend
 npm install
-npm run dev          # runs on http://localhost:3001
+npx playwright install chromium   # one time: the hidden browser QA uses
+cp .env.example .env              # then put the Gemini key in .env (ask Arya)
+npm run dev                       # runs on http://localhost:3001
 
 # 2. Frontend (the "dining room") — terminal window 2
 cd frontend
 npm install
-npm run dev          # open the link it prints, usually http://localhost:5173
+npm run dev                       # open http://localhost:5173
 ```
 
-The backend needs a file called `backend/.env` (it's secret, so it's not on GitHub; ask Arya for it):
+| Page | What it's for |
+|---|---|
+| **/try** (also `/`) | The real app: photo → site → click and speak notes → Ship |
+| **/blocks** | Gallery of every section and theme (free and pro) |
+| **/dev** | Plain test page with one box per feature, and the AI key settings |
+
+Tests: `cd backend && npm test` and `cd frontend && npm test`. Everything should pass.
+
+**Secrets:** `backend/.env` holds the real key and is never committed (`.gitignore` blocks it). `backend/.env.example` shows what goes in it. Users can also paste their own Gemini, OpenAI or Claude key on `/dev`; it stays in their browser.
+
+---
+
+## Project map
 
 ```
-GEMINI_API_KEY=...
-GITHUB_TOKEN=...
-PORT=3001
+shipIt/
+├── backend/                 the server (Node + Express)
+│   ├── src/
+│   │   ├── index.js         turns the server on and lists every address it answers
+│   │   ├── routes/          one file per address the browser calls (POST /api/build, /api/ship, …)
+│   │   ├── ai/              talking to Gemini, OpenAI or Claude through one shared shape
+│   │   ├── vision/          reading a photo into business info (name, items, colors)
+│   │   ├── site/            snapping sections together into a website
+│   │   ├── workspace/       each site's versions: v1, v2, … (old ones never change)
+│   │   ├── agent/           the AI's work loop and the tools it may use (read, edit, write files)
+│   │   ├── ship/            Ship: apply notes → test → fix → summary
+│   │   ├── qa/              testing a site like a customer in a hidden browser
+│   │   └── runs/            recording every run so it can be replayed on stage
+│   ├── templates/           the design itself: page shell, 15 sections, 3 themes, animations
+│   ├── test/                automatic checks (they use a fake AI, so they're free)
+│   └── .env.example         which secrets the server needs
+├── frontend/                what you see in the browser (React + Vite)
+│   └── src/
+│       ├── App.jsx          which page shows for which address
+│       ├── pages/           the pages: Editor (/try), Blocks, Dev
+│       ├── editor/          the editor's pieces: photo drop, picker, notes, voice, state
+│       └── lib/             small shared helpers: AI key settings, live-stream reader
+└── docs/superpowers/        the design spec and the step-by-step build plan
 ```
-
-Run the backend's automatic tests with `cd backend && npm test`. Everything should say ✔.
-
-Then open **http://localhost:5173/dev** to try each feature, or **/blocks** to see every section.
 
 ---
 
@@ -68,76 +98,40 @@ Then open **http://localhost:5173/dev** to try each feature, or **/blocks** to s
 |---|---|---|
 | Dining room, what customers see | **Frontend**: the website you click on | `frontend/` |
 | Kitchen, where the work happens | **Backend**: a server that runs the AI and edits files | `backend/` |
-| Waiter carrying orders back and forth | **API**: web requests like `POST /api/run` | |
-| The chef | **Gemini**, Google's AI model | `backend/src/agent/gemini.js` |
-| The chef's tools (knife, oven) | **Tools** the AI may use: read a file, write a file, run a command | `backend/src/agent/tools.js` |
-| The recipe the chef follows | **The agent loop**: ask the AI → it picks a tool → we run it → repeat | `backend/src/agent/loop.js` |
+| Waiter carrying orders back and forth | **API**: web requests like `POST /api/build` | `backend/src/routes/` |
+| The chef | **The AI** (Gemini, OpenAI or Claude) | `backend/src/ai/` |
+| The chef's tools (knife, oven) | **Tools** the AI may use: read, edit and write files | `backend/src/agent/tools.js` |
+| The food inspector | **QA**: opens the site like a customer and finds problems | `backend/src/qa/runQa.js` |
 
-### What happens when you upload a photo (Feature 5)
+### The whole flow
 
 ```
-You pick a photo on /dev and click "build site"
-        │
-        ▼
-frontend/src/lib/stream.js  ── photo + your AI key ──►  backend: POST /api/build
-                                                              │
-                                                 backend/src/routes/build.js
-                                                 opens a live stream ("Server-Sent
-                                                 Events", like a live ticker)
-                                                              │
-                                                 backend/src/vision/extract.js
-                                                 the AI reads the photo: name, items,
-                                                 prices, colors, wording
-                                                              │
-                                                 backend/src/templates/compose.js
-                                                 picks a theme + sections and
-                                                 snaps them into a website
-                                                              │
-                                                 backend/src/workspace/workspace.js
-                                                 saves it as version 1 (v1)
-        ▲                                                     │
-        └──── each step streams back live, then the site ─────┘
+/try in the browser                                   backend
+──────────────────                                    ───────
+1. drop a photo        ── POST /api/build ──►  vision/extract.js reads it
+                                               site/compose.js builds it  → v1
+2. click parts, talk   ── POST /api/transcribe ► ai/ turns speech into text
+   (notes = "pins")
+3. press Ship          ── POST /api/ship ───►  ship/ship.js
+                                                 copy v1 → v2
+                                                 AI edits v2 (agent/)
+                                                 QA tests v2 (qa/)
+                                                 failed? AI fixes, QA again (max 2×)
+4. see what changed    ◄── live updates ─────  summary + before/after screenshots
 ```
 
-### Every backend file, in plain English
-
-| File | What it does |
-|---|---|
-| `backend/src/index.js` | Turns the server on. The front door. |
-| `backend/src/routes/build.js` | `POST /api/build`: photo in, website out, streamed live step by step. |
-| `backend/src/routes/sse.js` | The live-stream helper. Stops the work if you close the browser tab. |
-| `backend/src/routes/ai.js` | `POST /api/ai/check`: the "test my key" button. |
-| `backend/src/routes/blocks.js` | Lists every section and theme for the `/blocks` gallery. |
-| `backend/src/routes/dev.js` | Extra routes only the `/dev` test page uses. |
-| `backend/src/ai/` | One small adapter per AI company (Gemini, OpenAI, Claude) so the rest of the app doesn't care which one you use. `fromRequest.js` takes the key from your browser; the key is never saved. |
-| `backend/src/vision/extract.js` | Asks the AI to read the photo, then **cleans up the answer**: fills in anything missing, keeps 8 items max, throws out bad colors, never crashes on a weird answer. |
-| `backend/src/templates/compose.js` | Snaps hand-made sections together into one site. The same business always gets the same site. |
-| `backend/src/templates/fill.js` | Puts the business's name, items and wording into a section, safely. |
-| `backend/templates/` | The design itself: 15 sections, 3 themes (hearth, atelier, noir), and the animations. |
-| `backend/src/workspace/workspace.js` | Every run gets a folder with v1, v2, … Old versions never change, so before/after always works. |
-| `backend/src/runs/recorder.js` | Records every step of a run with its timing, so we can replay it on stage if the Wi-Fi dies. |
-| `backend/src/agent/` | The AI "agent loop" (ask the AI → it picks a tool → we run it → repeat). Ship (Feature 10) will use it to make your changes. |
-| `backend/test/` | Automatic checks that use a **fake AI**, so we can test for free without calling the real one. |
-
-### Frontend files
-
-| File | What it does |
-|---|---|
-| `frontend/src/App.jsx` | Decides which page shows. `/` goes to `/dev` for now. |
-| `frontend/src/routes/Dev.jsx` | A plain test page with one box per feature, so we can try each one. |
-| `frontend/src/routes/Blocks.jsx` | The `/blocks` gallery of every section and theme (free and pro). |
-| `frontend/src/lib/aiSettings.js` | Saves your AI provider and key in this browser only. |
-| `frontend/src/lib/stream.js` | Sends a request and shows each live update as it arrives. |
+Every step streams back live ("Server-Sent Events", like a sports ticker), and every run is recorded (`runs/recorder.js`) so we can replay it if the Wi-Fi dies on stage.
 
 ### Words you'll hear
 
 - **Prompt**: the instruction we give the AI.
 - **Agent**: an AI that doesn't just answer, it *does things* using tools, step by step.
-- **Endpoint / route**: an address on the server the frontend can call, like `/api/build`.
-- **SSE (Server-Sent Events)**: the server keeps sending updates over one open connection, like a live sports ticker.
-- **Section / block**: one hand-made piece of a website (a hero, a menu, a "visit us" box). Sites are built by snapping them together.
+- **Endpoint / route**: an address on the server the frontend can call, like `/api/ship`.
+- **SSE (Server-Sent Events)**: the server keeps sending updates over one open connection.
+- **Section / block**: one hand-made piece of a website (a hero, a menu, a "visit us" box).
 - **Theme**: the fonts, colors and feel (hearth = warm, atelier = calm, noir = dark).
 - **`data-sid`**: an invisible name tag on every editable part of a site (like `hero-title`). It's how ShipIt knows exactly what you clicked.
+- **Pin / note**: one change the owner asked for, attached to one part of the site.
 - **Commit / push / merge**: save a snapshot / upload it to GitHub / combine a branch into the main version.
 
 ---
@@ -147,17 +141,17 @@ frontend/src/lib/stream.js  ── photo + your AI key ──►  backend: POST 
 | # | Feature | Status |
 |---|---|---|
 | 1 | Agent can't crash: errors become messages, step limit, stop button, safe folders | ✅ done |
-| 2 | Model choice + automatic retry when the AI is busy | ✅ done |
+| 2 | Automatic retry when the AI is busy | ✅ done |
 | 3 | 15 hand-made sections + 3 themes, and the `/blocks` gallery | ✅ done |
 | 4 | A fresh copy of the site for every change (v1, v2, …) | ✅ done |
 | 4b | Bring your own AI key (Gemini, OpenAI or Claude) | ✅ done |
 | 5 | Photo → site, streamed live and recorded | ✅ done |
-| 6 | Editor screen | ⏳ next |
-| 7 | Click to drop pins | |
-| 8 | Speak your changes | |
-| 9 | Customer-style testing (clicks every button, checks phone size) | |
-| 10 | Ship: apply all pins, test, fix | |
-| 11 | Checklist animation, before/after slider, summary card | |
+| 6 | Editor screen at `/try` | ✅ done |
+| 7 | Click parts of the site to drop numbered pins | ✅ done |
+| 8 | Hold the mic and speak a note | ✅ done |
+| 9 | Customer-style testing (links, errors, phone size, images, name tags) | ✅ done |
+| 10 | Ship: apply all pins, test, fix | 🟡 built and tested with a fake AI; waiting on a real AI test |
+| 11 | Ship screen: live checklist, before/after slider, summary card | ⏳ next |
 | 12 | Offline replay of a real run (backup if Wi-Fi dies) | |
 | 13 | qtzx-style landing page | |
 | 14 | Desktop app (Electron), optional | |

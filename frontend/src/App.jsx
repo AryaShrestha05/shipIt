@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import Dev from './routes/Dev';
-import Blocks from './routes/Blocks';
-import Editor from './routes/Editor';
+import Dev from './pages/Dev';
+import Blocks from './pages/Blocks';
+import Editor from './pages/Editor';
 
 // "/" goes to the editor until the real landing page (Feature 13) exists.
 export default function App() {

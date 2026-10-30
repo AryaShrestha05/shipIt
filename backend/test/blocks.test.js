@@ -1,8 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const express = require('express');
-const compose = require('../src/templates/compose');
-const catalog = require('../src/templates/catalog');
+const compose = require('../src/site/compose');
+const catalog = require('../src/site/catalog');
 const blocks = require('../src/routes/blocks');
 
 async function get(url) {

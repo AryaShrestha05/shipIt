@@ -1,9 +1,9 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const compose = require('../templates/compose');
+const compose = require('../site/compose');
 const workspace = require('../workspace/workspace');
-const sample = require('../templates/sample');
+const sample = require('../site/sample');
 
 // Helper routes for the /dev test page only. They let us look at each
 // feature on its own before the real editor exists.

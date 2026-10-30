@@ -1,5 +1,7 @@
 const googleAI = require('@google/generative-ai');
-const gemini = require('../agent/gemini');
+const retry = require('./retry');
+
+const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 // Gemini, behind the same small interface as the other providers.
 // The agent loop was written for Gemini's chat, so chat needs no translation.
@@ -18,7 +20,7 @@ function geminiSchema(schema) {
 }
 
 function create(options, client) {
-  const model = options.model || gemini.DEFAULT_MODEL;
+  const model = options.model || DEFAULT_MODEL;
   if (!client) client = new googleAI.GoogleGenerativeAI(options.apiKey);
 
   function chatModel(chatOptions) {
@@ -35,7 +37,7 @@ function create(options, client) {
       // responseSchema makes Gemini stick to the shape instead of just trying to.
       generationConfig: { responseMimeType: 'application/json', responseSchema: geminiSchema(request.schema) },
     });
-    const result = await gemini.withRetry(function () {
+    const result = await retry.withRetry(function () {
       return jsonModel.generateContent([
         { inlineData: { mimeType: request.mimeType, data: request.imageBase64 } },
         { text: request.prompt + '\n\nReply with JSON matching this schema:\n' + JSON.stringify(request.schema) },
@@ -46,7 +48,7 @@ function create(options, client) {
 
   async function transcribe(request) {
     const plain = client.getGenerativeModel({ model: model });
-    const result = await gemini.withRetry(function () {
+    const result = await retry.withRetry(function () {
       return plain.generateContent([
         { inlineData: { mimeType: request.mimeType, data: request.audioBase64 } },
         { text: 'Write down exactly what is said in this recording. Reply with the words only.' },

@@ -10,7 +10,7 @@ process.env.SHIPIT_RECORDINGS = fs.mkdtempSync(path.join(os.tmpdir(), 'shipit-re
 const build = require('../src/routes/build');
 const workspace = require('../src/workspace/workspace');
 const recorder = require('../src/runs/recorder');
-const sample = require('../src/templates/sample');
+const sample = require('../src/site/sample');
 
 // Starts the router on a free port, POSTs `body`, and returns the raw text.
 async function post(router, body) {

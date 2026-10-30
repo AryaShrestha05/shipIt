@@ -1,9 +1,9 @@
-const gemini = require('./gemini');
+const retry = require('../ai/retry');
 
 // The agent loop — the "brain". Pure logic, no I/O.
 //
 // Caller provides:
-//   model    — a Gemini model (from gemini.js)
+//   model    — the AI's chat model (from ai.chatModel in src/ai/)
 //   prompt   — the user's task description
 //   runTool  — function that actually executes tool calls (from tools.js)
 //   onEvent  — callback, called on every step (prompt, tool_call,
@@ -25,7 +25,7 @@ async function runAgent(model, prompt, runTool, onEvent, options) {
 
   onEvent({ type: 'user_prompt', content: prompt });
 
-  let result = await gemini.withRetry(function () {
+  let result = await retry.withRetry(function () {
     return chat.sendMessage(prompt);
   });
   //gemini returns an array of the tools that it wants to run, or nothing.
@@ -59,7 +59,7 @@ async function runAgent(model, prompt, runTool, onEvent, options) {
     }
     if (stopped()) break;
 
-    result = await gemini.withRetry(function () {
+    result = await retry.withRetry(function () {
       return chat.sendMessage(responses);
     });
     calls = result.response.functionCalls() || [];

@@ -1,7 +1,7 @@
 const express = require('express');
-const compose = require('../templates/compose');
-const catalog = require('../templates/catalog');
-const sample = require('../templates/sample');
+const compose = require('../site/compose');
+const catalog = require('../site/catalog');
+const sample = require('../site/sample');
 
 // Routes for the /blocks gallery page.
 const router = express.Router();

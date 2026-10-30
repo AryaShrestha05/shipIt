@@ -1,4 +1,4 @@
-const fill = require('../templates/fill');
+const fill = require('../site/fill');
 
 // Turns a photo of a menu, sign or storefront into the business info a site
 // is built from:

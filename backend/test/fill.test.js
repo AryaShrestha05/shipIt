@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const fill = require('../src/templates/fill');
+const fill = require('../src/site/fill');
 
 const TEMPLATE = [
   '<style>:root{--bg:{{bg}};--ink:{{ink}};--accent:{{accent}}}</style>',

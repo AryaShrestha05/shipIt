@@ -1,8 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const gemini = require('../src/agent/gemini');
-const createModel = gemini.createModel;
-const withRetry = gemini.withRetry;
+const retry = require('../src/ai/retry');
+const withRetry = retry.withRetry;
 
 // A function that fails with the given errors in order, then returns 'ok'.
 function failing(...messages) {
@@ -43,32 +42,4 @@ test('withRetry falls back after exhausting retries', async () => {
   assert.strictEqual(result, 'fallback');
   assert.strictEqual(fellBack, 1);
   assert.strictEqual(fn.calls(), 3);
-});
-
-// Stand-in for GoogleGenerativeAI that records the model config it was given.
-function stubGenAI() {
-  const configs = [];
-  class Stub {
-    getGenerativeModel(config) {
-      configs.push(config);
-      return {};
-    }
-  }
-  return { Stub: Stub, configs: configs };
-}
-
-test('createModel without tools sends no tools key', () => {
-  const stub = stubGenAI();
-  createModel({ apiKey: 'k' }, stub.Stub);
-  assert.ok(!('tools' in stub.configs[0]));
-});
-
-test('createModel defaults to gemini-2.5-flash', () => {
-  const stub = stubGenAI();
-  const saved = process.env.GEMINI_MODEL;
-  delete process.env.GEMINI_MODEL;
-  createModel({ apiKey: 'k', tools: [] }, stub.Stub);
-  if (saved !== undefined) process.env.GEMINI_MODEL = saved;
-  assert.strictEqual(stub.configs[0].model, 'gemini-2.5-flash');
-  assert.deepStrictEqual(stub.configs[0].tools, [{ functionDeclarations: [] }]);
 });
