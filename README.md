@@ -56,6 +56,8 @@ PORT=3001
 
 Run the backend's automatic tests with `cd backend && npm test`. Everything should say ✔.
 
+Then open **http://localhost:5173/dev** to try each feature, or **/blocks** to see every section.
+
 ---
 
 ## How the code works (no JavaScript knowledge needed)
@@ -71,33 +73,30 @@ Run the backend's automatic tests with `cd backend && npm test`. Everything shou
 | The chef's tools (knife, oven) | **Tools** the AI may use: read a file, write a file, run a command | `backend/src/agent/tools.js` |
 | The recipe the chef follows | **The agent loop**: ask the AI → it picks a tool → we run it → repeat | `backend/src/agent/loop.js` |
 
-### What happens when you press "Run" (today's version)
+### What happens when you upload a photo (Feature 5)
 
 ```
-You click Run in the browser
+You pick a photo on /dev and click "build site"
         │
         ▼
-frontend/src/routes/Agent.jsx  ── sends your prompt ──►  backend: POST /api/run
+frontend/src/lib/stream.js  ── photo + your AI key ──►  backend: POST /api/build
                                                               │
-                                                 backend/src/routes/run.js
-                                                 keeps the connection open and
-                                                 streams updates live (this is called
-                                                 "Server-Sent Events", like a live ticker)
+                                                 backend/src/routes/build.js
+                                                 opens a live stream ("Server-Sent
+                                                 Events", like a live ticker)
                                                               │
-                                                 backend/src/agent/runner.js
-                                                 hires the chef, hands over the tools
+                                                 backend/src/vision/extract.js
+                                                 the AI reads the photo: name, items,
+                                                 prices, colors, wording
                                                               │
-                                                 backend/src/agent/loop.js
-                                                 ┌──────────────────────────────┐
-                                                 │ 1. Send the task to Gemini   │
-                                                 │ 2. Gemini: "read index.html" │
-                                                 │ 3. We run that tool          │
-                                                 │ 4. Send the result back      │
-                                                 │ 5. Repeat until Gemini says  │
-                                                 │    "done" + a summary        │
-                                                 └──────────────────────────────┘
+                                                 backend/src/templates/compose.js
+                                                 picks a theme + sections and
+                                                 snaps them into a website
+                                                              │
+                                                 backend/src/workspace/workspace.js
+                                                 saves it as version 1 (v1)
         ▲                                                     │
-        └──────────── each step streams back live ────────────┘
+        └──── each step streams back live, then the site ─────┘
 ```
 
 ### Every backend file, in plain English
@@ -105,31 +104,39 @@ frontend/src/routes/Agent.jsx  ── sends your prompt ──►  backend: POST
 | File | What it does |
 |---|---|
 | `backend/src/index.js` | Turns the server on. The front door. |
-| `backend/src/routes/run.js` | The one "order window" right now: `POST /api/run`. Streams progress live. |
-| `backend/src/agent/runner.js` | Puts the AI, the tools, and the loop together for one run. |
-| `backend/src/agent/gemini.js` | Connects to Google's AI. Picks the model (default `gemini-2.5-flash`), gives it its rules, and **retries automatically** when Google says "too busy" (errors 429/503). |
-| `backend/src/agent/tools.js` | The 3 things the AI is allowed to do: `read_file`, `write_file`, `run_command`. It **can't touch files outside its own folder**, and if a tool fails, the AI gets the error message as text so it can try again instead of crashing. |
-| `backend/src/agent/loop.js` | The back-and-forth with the AI. Has a **25-step limit** so it can't loop forever, handles several tool requests at once, and can be stopped mid-run. |
-| `backend/src/github/client.js` | Helpers for GitHub (clone, push, open a PR). Not used in the demo. |
-| `backend/test/` | Automatic checks that use a **fake AI** following a script, so we can test the logic for free without calling Google. |
-| `backend/sandbox/` | A tiny practice folder the AI edits today. It gets replaced by real bakery sites in Feature 4. |
+| `backend/src/routes/build.js` | `POST /api/build`: photo in, website out, streamed live step by step. |
+| `backend/src/routes/sse.js` | The live-stream helper. Stops the work if you close the browser tab. |
+| `backend/src/routes/ai.js` | `POST /api/ai/check`: the "test my key" button. |
+| `backend/src/routes/blocks.js` | Lists every section and theme for the `/blocks` gallery. |
+| `backend/src/routes/dev.js` | Extra routes only the `/dev` test page uses. |
+| `backend/src/ai/` | One small adapter per AI company (Gemini, OpenAI, Claude) so the rest of the app doesn't care which one you use. `fromRequest.js` takes the key from your browser; the key is never saved. |
+| `backend/src/vision/extract.js` | Asks the AI to read the photo, then **cleans up the answer**: fills in anything missing, keeps 8 items max, throws out bad colors, never crashes on a weird answer. |
+| `backend/src/templates/compose.js` | Snaps hand-made sections together into one site. The same business always gets the same site. |
+| `backend/src/templates/fill.js` | Puts the business's name, items and wording into a section, safely. |
+| `backend/templates/` | The design itself: 15 sections, 3 themes (hearth, atelier, noir), and the animations. |
+| `backend/src/workspace/workspace.js` | Every run gets a folder with v1, v2, … Old versions never change, so before/after always works. |
+| `backend/src/runs/recorder.js` | Records every step of a run with its timing, so we can replay it on stage if the Wi-Fi dies. |
+| `backend/src/agent/` | The AI "agent loop" (ask the AI → it picks a tool → we run it → repeat). Ship (Feature 10) will use it to make your changes. |
+| `backend/test/` | Automatic checks that use a **fake AI**, so we can test for free without calling the real one. |
 
 ### Frontend files
 
 | File | What it does |
 |---|---|
-| `frontend/src/App.jsx` | Decides which page shows: `/` = landing page, `/agent` = the console. |
-| `frontend/src/routes/Landing.jsx` | The marketing page (3D galaxy for now; becomes the qtzx-style dark page in Feature 13). |
-| `frontend/src/routes/Agent.jsx` | The console that shows the AI's steps live. Becomes the click-and-speak editor in Feature 6. |
-| `frontend/src/components/` | Reusable building blocks: buttons, cards, the 3D scene. |
+| `frontend/src/App.jsx` | Decides which page shows. `/` goes to `/dev` for now. |
+| `frontend/src/routes/Dev.jsx` | A plain test page with one box per feature, so we can try each one. |
+| `frontend/src/routes/Blocks.jsx` | The `/blocks` gallery of every section and theme (free and pro). |
+| `frontend/src/lib/aiSettings.js` | Saves your AI provider and key in this browser only. |
+| `frontend/src/lib/stream.js` | Sends a request and shows each live update as it arrives. |
 
 ### Words you'll hear
 
 - **Prompt**: the instruction we give the AI.
 - **Agent**: an AI that doesn't just answer, it *does things* using tools, step by step.
-- **Endpoint / route**: an address on the server the frontend can call, like `/api/run`.
+- **Endpoint / route**: an address on the server the frontend can call, like `/api/build`.
 - **SSE (Server-Sent Events)**: the server keeps sending updates over one open connection, like a live sports ticker.
-- **Template**: a pre-designed website ShipIt fills in with the bakery's info, so every site looks premium.
+- **Section / block**: one hand-made piece of a website (a hero, a menu, a "visit us" box). Sites are built by snapping them together.
+- **Theme**: the fonts, colors and feel (hearth = warm, atelier = calm, noir = dark).
 - **`data-sid`**: an invisible name tag on every editable part of a site (like `hero-title`). It's how ShipIt knows exactly what you clicked.
 - **Commit / push / merge**: save a snapshot / upload it to GitHub / combine a branch into the main version.
 
@@ -140,11 +147,12 @@ frontend/src/routes/Agent.jsx  ── sends your prompt ──►  backend: POST
 | # | Feature | Status |
 |---|---|---|
 | 1 | Agent can't crash: errors become messages, step limit, stop button, safe folders | ✅ done |
-| 2 | Model choice + automatic retry when Google is busy | ✅ done |
-| 3 | Two premium bakery templates + filling them from data | ⏳ next |
-| 4 | A fresh copy of the site for every run | |
-| 5 | Photo → site | |
-| 6 | Editor screen | |
+| 2 | Model choice + automatic retry when the AI is busy | ✅ done |
+| 3 | 15 hand-made sections + 3 themes, and the `/blocks` gallery | ✅ done |
+| 4 | A fresh copy of the site for every change (v1, v2, …) | ✅ done |
+| 4b | Bring your own AI key (Gemini, OpenAI or Claude) | ✅ done |
+| 5 | Photo → site, streamed live and recorded | ✅ done |
+| 6 | Editor screen | ⏳ next |
 | 7 | Click to drop pins | |
 | 8 | Speak your changes | |
 | 9 | Customer-style testing (clicks every button, checks phone size) | |
