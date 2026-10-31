@@ -1,0 +1,10 @@
+:root { --paper: #102d50; --text: #e1f1ff; --accent: #8ad9ff; --on-accent: #102d50; --surface: #15385c; --tray: #91d5ff0a; --line: #8ad9ff40; --font-display: 'Manrope', system-ui, sans-serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: monospace; --display-weight: 500; --display-tracking: -.045em; --radius: 2px; --grain: 0; }
+body { background-image: linear-gradient(#8ad9ff0d 1px, transparent 1px), linear-gradient(90deg, #8ad9ff0d 1px, transparent 1px); background-size: 32px 32px; }
+.nav, .btn, .btn-icon, .eyebrow { border-radius: 2px; }
+.core, .sticker { box-shadow: none; border: 1px solid var(--line); }
+.hero-card { transform: none; }
+.label, .eyebrow, .price, .footer, .list-row::before { font-family: monospace; }
+.price { font-style: normal; font-size: 19px; }
+.card-grid > li, .card-grid > li:nth-child(4n + 1), .card-grid > li:nth-child(4n + 2) { grid-column: span 6; }
+.core::after { content: '+'; position: absolute; top: 5px; right: 12px; color: var(--accent); font: 22px monospace; }
+.theme-blueprint .theme-scene { border: 1px solid var(--line); }

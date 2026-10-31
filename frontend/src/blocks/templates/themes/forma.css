@@ -1,0 +1,11 @@
+:root { --paper: #ece9e2; --text: #252a25; --accent: #536547; --surface: #e4e2d9; --tray: transparent; --line: #252a2526; --font-display: 'Bricolage Grotesque', system-ui, sans-serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Manrope', system-ui, sans-serif; --display-weight: 500; --display-tracking: -.065em; --radius: 4px; --grain: .025; }
+.nav { border-radius: 0; background: transparent; box-shadow: none; border-bottom: 1px solid var(--line); }
+.core { box-shadow: none; border: 1px solid var(--line); }
+.hero-title { font-size: clamp(56px, 8vw, 122px); }
+.price, .hero-card-big, .ticket-hours { font-style: normal; font-size: 18px; }
+.items-cards .card-grid > li { grid-column: span 6; }
+.items-cards .core { min-height: 270px; display: flex; flex-direction: column; justify-content: flex-end; background: linear-gradient(135deg, #dadfd0, #efeee6); }
+.items-cards .core::before { content: ''; position: absolute; width: 58px; height: 58px; top: 40px; left: 40px; border: 1px solid #53654740; background: linear-gradient(135deg, #d5dec3, #9da98d); transform: rotate(-18deg) skew(8deg); box-shadow: 12px 18px 0 #252a2512; }
+.items-cards .card-grid > li:nth-child(even) .core { background: #ddd8ca; }
+.sticker { border-radius: 4px; transform: none; box-shadow: 5px 5px 0 #252a2517; }
+.theme-forma .theme-scene { border-radius: 4px; border: 1px solid var(--line); }

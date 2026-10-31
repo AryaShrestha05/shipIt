@@ -1,0 +1,10 @@
+/* One flexible foundation: fonts and palette are supplied by the customer. */
+:root {
+  --paper: var(--bg);
+  --text: var(--ink);
+  --radius: 28px;
+  --grain: 0;
+  --display-tracking: -.035em;
+}
+.price, .hero-card-big, .ticket-hours { font-style: normal; }
+.hero-card { transform: none; }

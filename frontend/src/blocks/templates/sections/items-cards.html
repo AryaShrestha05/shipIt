@@ -1,0 +1,15 @@
+<section class="section items items-cards" id="items" data-reveal>
+  <div class="section-head">
+    <span class="eyebrow" data-sid="items-eyebrow">{{itemsEyebrow}}</span>
+    <h2 class="display h2" data-sid="items-title">{{itemsTitle}}</h2>
+  </div>
+  <ul class="card-grid"><!--items--><li class="shell spotlight" data-sid="item-{{i}}">
+      <div class="core">
+        <div class="row-between">
+          <h3 class="item-name">{{item.name}}</h3>
+          <span class="price">{{item.price}}</span>
+        </div>
+        <p class="muted">{{item.note}}</p>
+      </div>
+    </li><!--/items--></ul>
+</section>

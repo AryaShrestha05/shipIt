@@ -1,0 +1,404 @@
+{
+  "noir": {
+    "name": "AFTER HOURS",
+    "tagline": "Good company. Great drinks. Stay a little longer.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#0b0b12",
+      "ink": "#f4efff",
+      "accent": "#aa8bfa"
+    },
+    "items": [
+      {
+        "name": "House Martini",
+        "price": "$16",
+        "note": "Gin, dry vermouth, a twist"
+      },
+      {
+        "name": "Midnight Negroni",
+        "price": "$15",
+        "note": "Our bittersweet signature"
+      },
+      {
+        "name": "Small Plates",
+        "price": "$12",
+        "note": "Made for sharing"
+      },
+      {
+        "name": "Live Sessions",
+        "price": "Fri–Sat",
+        "note": "Local sounds after dark"
+      }
+    ],
+    "hours": "Thu–Sun · 4pm – 1am",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "An evening well spent",
+      "heroCta": "Explore the bar",
+      "ctaLabel": "Visit tonight",
+      "itemsNav": "Drinks",
+      "itemsEyebrow": "Behind the bar",
+      "itemsTitle": "Your usual, reimagined.",
+      "itemsSub": "Classics with a little after-dark character.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "Some of the best nights begin without a plan.",
+      "visitTitle": "Find us after dark",
+      "closingTitle": "One more round.",
+      "footerNote": "An independent neighborhood bar."
+    }
+  },
+  "bloom": {
+    "name": "Wild & Stem",
+    "tagline": "Seasonal flowers for the everyday and the unforgettable.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#fff2f4",
+      "ink": "#283f32",
+      "accent": "#3e6149"
+    },
+    "items": [
+      {
+        "name": "Market Bouquet",
+        "price": "$45",
+        "note": "Fresh stems, wrapped by hand"
+      },
+      {
+        "name": "Studio Arrangement",
+        "price": "$85",
+        "note": "A little wild, entirely yours"
+      },
+      {
+        "name": "Wedding Flowers",
+        "price": "From $250",
+        "note": "For your kind of celebration"
+      },
+      {
+        "name": "Flower Club",
+        "price": "$35 / week",
+        "note": "Something beautiful, every week"
+      }
+    ],
+    "hours": "Tue–Sat · 9am – 6pm",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "Grown with the seasons",
+      "heroCta": "Meet the flowers",
+      "ctaLabel": "Visit the flower shop",
+      "itemsNav": "Flowers",
+      "itemsEyebrow": "Fresh from the studio",
+      "itemsTitle": "A little more bloom.",
+      "itemsSub": "Thoughtfully gathered. Never quite the same twice.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "Flowers do not need an occasion. Sometimes they are the occasion.",
+      "visitTitle": "Visit our flower shop",
+      "closingTitle": "Let something bloom.",
+      "footerNote": "Seasonal flowers. Thoughtful gestures."
+    }
+  },
+  "zest": {
+    "name": "GOOD MOOD",
+    "tagline": "Big flavors. No fuss. Your new favorite lunch spot.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#fff6ce",
+      "ink": "#35251c",
+      "accent": "#b8311c"
+    },
+    "items": [
+      {
+        "name": "The Original Smash",
+        "price": "$12",
+        "note": "Double patty, house sauce"
+      },
+      {
+        "name": "Hot Honey Chicken",
+        "price": "$14",
+        "note": "Crunchy, sweet, a little heat"
+      },
+      {
+        "name": "Loaded Fries",
+        "price": "$8",
+        "note": "The works. Obviously."
+      },
+      {
+        "name": "Fresh Lemonade",
+        "price": "$5",
+        "note": "Squeezed daily, served cold"
+      }
+    ],
+    "hours": "Daily · 11am – 9pm",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "Fresh food. Good times.",
+      "heroCta": "See the good stuff",
+      "ctaLabel": "Come hungry",
+      "itemsNav": "Menu",
+      "itemsEyebrow": "Hot off the grill",
+      "itemsTitle": "All flavor. No boring.",
+      "itemsSub": "Made fresh. Stacked high. Gone fast.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "Life is too short for a sad lunch.",
+      "visitTitle": "Find the good stuff",
+      "closingTitle": "Bring your appetite.",
+      "footerNote": "Your lunch break just got better."
+    }
+  },
+  "blueprint": {
+    "name": "LINE / FORM",
+    "tagline": "Thoughtful spaces. Precise details. Architecture for everyday life.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#102d50",
+      "ink": "#e1f1ff",
+      "accent": "#8ad9ff"
+    },
+    "items": [
+      {
+        "name": "Space Planning",
+        "price": "From $800",
+        "note": "Better flow, better living"
+      },
+      {
+        "name": "Interior Design",
+        "price": "From $1,600",
+        "note": "Material, light and proportion"
+      },
+      {
+        "name": "Residential Concepts",
+        "price": "From $2,400",
+        "note": "A clear vision of home"
+      },
+      {
+        "name": "Design Consultation",
+        "price": "$180",
+        "note": "An hour to find your direction"
+      }
+    ],
+    "hours": "Mon–Fri · 9am – 6pm",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "Architecture & interiors",
+      "heroCta": "Explore our practice",
+      "ctaLabel": "Visit the studio",
+      "itemsNav": "Services",
+      "itemsEyebrow": "Our practice",
+      "itemsTitle": "Built around you.",
+      "itemsSub": "From first sketch to the smallest finishing detail.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "Good design is a conversation between the way a space looks and the way it feels to live in.",
+      "visitTitle": "Meet at the studio",
+      "closingTitle": "Let’s draw the future.",
+      "footerNote": "Independent architecture. Human spaces."
+    }
+  },
+  "ripple": {
+    "name": "Slow Tide",
+    "tagline": "Ocean air. Open skies. A different kind of getaway.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#f4efdf",
+      "ink": "#214b49",
+      "accent": "#bd572f"
+    },
+    "items": [
+      {
+        "name": "Coastal Cabin",
+        "price": "From $160 / night",
+        "note": "Wake up to the sound of the sea"
+      },
+      {
+        "name": "Weekend Retreat",
+        "price": "$340",
+        "note": "Two days to find your own pace"
+      },
+      {
+        "name": "Sunrise Walk",
+        "price": "$25",
+        "note": "A quiet path along the shoreline"
+      },
+      {
+        "name": "Seasonal Supper",
+        "price": "$55",
+        "note": "Local produce, a shared table"
+      }
+    ],
+    "hours": "Reception · Daily 8am – 8pm",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "A slower kind of stay",
+      "heroCta": "Find your escape",
+      "ctaLabel": "Visit the coast",
+      "itemsNav": "Experiences",
+      "itemsEyebrow": "Your time, your pace",
+      "itemsTitle": "A little further from busy.",
+      "itemsSub": "Thoughtful stays and simple pleasures by the sea.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "The best things here are the ones you do not have to schedule.",
+      "visitTitle": "Find the shoreline",
+      "closingTitle": "Stay a little longer.",
+      "footerNote": "Unhurried days. Unforgettable places."
+    }
+  },
+  "orbit": {
+    "name": "Otherworld",
+    "tagline": "Digital experiences that feel a little out of this world.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#0c1026",
+      "ink": "#ececff",
+      "accent": "#b2a1ff"
+    },
+    "items": [
+      {
+        "name": "Brand Systems",
+        "price": "From $1,200",
+        "note": "A visual universe of your own"
+      },
+      {
+        "name": "Web Experiences",
+        "price": "From $2,800",
+        "note": "Built to be remembered"
+      },
+      {
+        "name": "Creative Direction",
+        "price": "From $900",
+        "note": "A clear point of view"
+      },
+      {
+        "name": "Motion Studies",
+        "price": "From $600",
+        "note": "Ideas, set in motion"
+      }
+    ],
+    "hours": "Mon–Fri · 10am – 6pm",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "Independent digital studio",
+      "heroCta": "Explore our capabilities",
+      "ctaLabel": "Meet the studio",
+      "itemsNav": "Capabilities",
+      "itemsEyebrow": "Made for what’s next",
+      "itemsTitle": "Good ideas deserve gravity.",
+      "itemsSub": "Design, technology and a healthy sense of curiosity.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "We make digital things that people do not just use. They remember.",
+      "visitTitle": "Enter our orbit",
+      "closingTitle": "Make something otherworldly.",
+      "footerNote": "Design beyond the expected."
+    }
+  },
+  "forma": {
+    "name": "FORM / OBJECT",
+    "tagline": "Useful objects. Considered forms. Made to live with.",
+    "vibe": "minimal",
+    "palette": {
+      "bg": "#ece9e2",
+      "ink": "#252a25",
+      "accent": "#536547"
+    },
+    "items": [
+      {
+        "name": "Arc Table Lamp",
+        "price": "$180",
+        "note": "Warm light, sculpted shade"
+      },
+      {
+        "name": "Stack Side Table",
+        "price": "$240",
+        "note": "Solid ash, a quiet presence"
+      },
+      {
+        "name": "Fold Desk Tray",
+        "price": "$48",
+        "note": "Order for the everyday"
+      },
+      {
+        "name": "Column Vase",
+        "price": "$65",
+        "note": "A single stem, a strong shape"
+      }
+    ],
+    "hours": "Tue–Sun · 10am – 6pm",
+    "address": "88 Raymond Ave, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "Objects for living",
+      "heroCta": "View the collection",
+      "ctaLabel": "Visit the showroom",
+      "itemsNav": "Collection",
+      "itemsEyebrow": "The current collection",
+      "itemsTitle": "Less, but considered.",
+      "itemsSub": "Every curve, edge and material has a reason.",
+      "highlightLabel": "Now booking",
+      "highlightNote": "Weekend spots fill up fast — book early.",
+      "quote": "An object should feel as good to live with as it looks on its first day.",
+      "visitTitle": "Visit the showroom",
+      "closingTitle": "Find your everyday object.",
+      "footerNote": "Designed with care. Made to stay."
+    }
+  },
+  "canvas": {
+    "name": "Rosie's Bakery",
+    "tagline": "Bread and pastries, baked at dawn by the same family since 1987.",
+    "vibe": "warm",
+    "palette": {
+      "bg": "#f4ece1",
+      "ink": "#2e1f14",
+      "accent": "#b4532a"
+    },
+    "items": [
+      {
+        "name": "Butter Croissant",
+        "price": "$4",
+        "note": "Laminated over three days"
+      },
+      {
+        "name": "Country Sourdough",
+        "price": "$9",
+        "note": "Wild yeast, 36-hour ferment"
+      },
+      {
+        "name": "Cardamom Bun",
+        "price": "$5",
+        "note": "Swedish-style, pearl sugar"
+      },
+      {
+        "name": "Pain au Chocolat",
+        "price": "$5",
+        "note": "Two bars of dark chocolate"
+      },
+      {
+        "name": "Seasonal Galette",
+        "price": "$7",
+        "note": "Whatever the market gave us"
+      },
+      {
+        "name": "Brown Butter Cookie",
+        "price": "$3",
+        "note": "Flaky salt on top"
+      }
+    ],
+    "hours": "Tue–Sun · 7am – 3pm",
+    "address": "214 Main Street, Poughkeepsie, NY",
+    "copy": {
+      "heroEyebrow": "Fresh every morning",
+      "heroCta": "See today's bakes",
+      "ctaLabel": "Order ahead",
+      "itemsNav": "Menu",
+      "itemsEyebrow": "The counter",
+      "itemsTitle": "What we're baking",
+      "itemsSub": "Made in the morning. Gone by the afternoon.",
+      "highlightLabel": "Out of the oven",
+      "highlightNote": "Come early — the croissants go first.",
+      "quote": "We start before sunrise so the whole street smells like butter by seven.",
+      "visitTitle": "Visit the bakery",
+      "closingTitle": "Come hungry.",
+      "footerNote": "Baked by hand, sold until it's gone."
+    }
+  }
+}

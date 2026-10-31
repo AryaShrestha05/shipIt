@@ -1,0 +1,18 @@
+/* bloom — botanical, soft and elegant. */
+:root {
+  --bg: #fff2f4;
+  --ink: #283f32;
+  --accent: #3e6149;
+  --paper: var(--bg);
+  --surface: #fffaf9;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-accent: 'Cormorant Garamond', Georgia, serif;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --radius: 40px;
+  --grain: 0.025;
+}
+.eyebrow { border: 1px solid var(--line); }
+.quote { font-style: italic; }
+.sticker:nth-child(even) { background: #f4e2e6; }
