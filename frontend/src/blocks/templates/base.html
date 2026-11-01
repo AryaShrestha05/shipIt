@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{name}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="{{fontsHref}}" rel="stylesheet">
+  <style>:root{--bg:{{bg}};--ink:{{ink}};--accent:{{accent}}}</style>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body class="theme-{{theme}}">
+  <div class="grain" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <a class="nav-brand" data-sid="nav-brand" href="#top">{{name}}</a>
+    <div class="nav-links">
+      <a data-sid="nav-items" href="#items">{{itemsNav}}</a>
+      <a data-sid="nav-visit" href="#visit">Visit</a>
+    </div>
+    <a class="btn btn-ink magnetic" data-sid="cta-order" href="#order">
+      {{ctaLabel}} <span class="btn-icon" aria-hidden="true">↗</span>
+    </a>
+  </nav>
+
+  <main>
+<!--sections-->
+  </main>
+
+  <footer class="footer">
+    <span data-sid="footer-name">{{name}}</span>
+    <span data-sid="footer-note">{{footerNote}}</span>
+    <span class="footer-made">Made with ShipIt</span>
+  </footer>
+
+  <script src="effects.js" defer></script>
+</body>
+</html>

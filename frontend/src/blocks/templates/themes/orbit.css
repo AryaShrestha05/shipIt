@@ -1,0 +1,10 @@
+:root { --paper: #0c1026; --text: #ececff; --accent: #b2a1ff; --on-accent: #11142b; --surface: #161b36; --tray: #b2a1ff08; --line: #b2a1ff30; --font-display: 'Manrope', system-ui, sans-serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Manrope', system-ui, sans-serif; --display-weight: 600; --display-tracking: -.065em; --radius: 24px; --grain: 0; }
+body { background-image: radial-gradient(circle at 1px 1px, #b2a1ff24 1px, transparent 1px); background-size: 44px 44px; }
+.nav { background: #13172cbd; border: 1px solid var(--line); }
+.core { background: linear-gradient(135deg, #252845bd, #141931); box-shadow: inset 0 1px 0 #ffffff15, 0 15px 50px #0002; backdrop-filter: blur(12px); }
+.price, .hero-card-big, .ticket-hours { font-style: normal; }
+.hero-title { font-size: clamp(56px, 7.5vw, 112px); }
+.eyebrow { border: 1px solid #b2a1ff50; background: #b2a1ff12; }
+.items-cards .card-grid > li:nth-child(3n) .core { background: linear-gradient(135deg, #3d3363, #212442); }
+.band { background: linear-gradient(110deg, #6651aa, #222b4e); color: #fff; }
+.theme-orbit .theme-scene { border-radius: 50%; box-shadow: 0 0 100px #9272ff16; }

@@ -1,0 +1,12 @@
+<section class="section items items-tilt" id="items" data-reveal>
+  <div class="section-head">
+    <span class="eyebrow" data-sid="items-eyebrow">{{itemsEyebrow}}</span>
+    <h2 class="display h2" data-sid="items-title">{{itemsTitle}}</h2>
+    <p class="muted" data-sid="items-sub">{{itemsSub}}</p>
+  </div>
+  <ul class="sticker-row"><!--items--><li class="sticker tilt" data-sid="item-{{i}}">
+      <span class="sticker-price">{{item.price}}</span>
+      <h3 class="sticker-name">{{item.name}}</h3>
+      <p class="muted">{{item.note}}</p>
+    </li><!--/items--></ul>
+</section>

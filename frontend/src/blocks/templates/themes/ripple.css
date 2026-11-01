@@ -1,0 +1,9 @@
+:root { --paper: #f4efdf; --text: #214b49; --accent: #bd572f; --surface: #faf6e9; --tray: #214b4909; --font-display: 'Fraunces', Georgia, serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Fraunces', Georgia, serif; --display-weight: 400; --display-tracking: -.045em; --radius: 48px; --grain: .025; }
+body { background-image: radial-gradient(ellipse at 100% 10%, #b8d3be55, transparent 50%); }
+.nav { box-shadow: none; border-bottom: 1px solid var(--line); border-radius: 0; backdrop-filter: blur(20px); }
+.hero-card { transform: none; }
+.core { box-shadow: none; border: 1px solid #214b4924; }
+.items-cards .core { border-radius: 90px 90px 30px 30px; min-height: 240px; padding-top: 50px; }
+.band { border-radius: 50% 50% 0 0 / 12% 12% 0 0; background: #245f5b; }
+.sticker:nth-child(even) { background: #e1ebdb; }
+.theme-ripple .theme-scene { border-radius: 48% 48% 10px 10px; overflow: hidden; }

@@ -1,0 +1,20 @@
+/* zest — sunny, energetic and punchy. */
+:root {
+  --bg: #fff6ce;
+  --ink: #35251c;
+  --accent: #b8311c;
+  --paper: var(--bg);
+  --surface: #fffdf2;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-accent: 'Manrope', system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.045em;
+  --display-case: uppercase;
+  --radius: 12px;
+  --grain: 0.035;
+}
+.price, .hero-card-big, .ticket-hours { font-style: normal; font-weight: 700; }
+.shell { box-shadow: 0 0 0 1px var(--text); }
+.core { box-shadow: 4px 4px 0 var(--text); }
+.sticker { box-shadow: 4px 4px 0 var(--text); }

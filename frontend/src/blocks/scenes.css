@@ -1,0 +1,58 @@
+/* Shared by the theme tiles and the actual website previews. Pure CSS 3D and
+   SVG stay lightweight, work in sandboxed previews, and need no scripts. */
+.scene-illustration { display: block; position: relative; width: 100%; height: 100%; overflow: hidden; isolation: isolate; }
+.scene-illustration *, .scene-illustration *::before, .scene-illustration *::after { box-sizing: border-box; }
+.scene-orbit { background: #0c1026; perspective: 700px; }
+.scene-orbit-stars { position: absolute; inset: 0; background-image: radial-gradient(circle, #ececffb3 1px, transparent 1.5px), radial-gradient(circle, #b2a1ff70 1px, transparent 1.5px); background-size: 47px 59px, 83px 71px; background-position: 9px 17px, 30px 35px; opacity: .65; }
+.scene-orbit-halo { position: absolute; width: 80%; height: 80%; left: 10%; top: 10%; border-radius: 50%; background: radial-gradient(ellipse, #7655dc60, transparent 65%); animation: scene-glow 6s ease-in-out infinite alternate; }
+.scene-orbit-system { position: absolute; width: 62%; aspect-ratio: 1; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-style: preserve-3d; }
+.scene-orbit-ring { position: absolute; inset: 0; border: 2px solid #b2a1ffb3; border-radius: 50%; transform-style: preserve-3d; box-shadow: 0 0 18px #9872ff40, inset 0 0 12px #9872ff30; }
+.scene-orbit-ring::after { content: ''; position: absolute; left: 50%; top: -5px; width: 9px; height: 9px; border-radius: 50%; background: #e6ddff; box-shadow: 0 0 12px #b2a1ff; }
+.scene-ring-one { animation: scene-ring-one 15s linear infinite; }
+.scene-ring-two { inset: 9%; border-color: #78dce4; animation: scene-ring-two 12s linear infinite; }
+.scene-ring-three { inset: -7%; border-color: #e2c2ff66; transform: rotateX(65deg) rotateZ(-30deg); }
+.scene-orbit-sphere { position: absolute; inset: 30%; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #fff, #c6baff 20%, #7053aa 54%, #1e193a 80%); box-shadow: 10px 15px 24px #0007, -4px -4px 22px #ad8bff50; }
+.scene-orbit-moon { position: absolute; width: 7%; aspect-ratio: 1; top: 12%; right: 12%; border-radius: 50%; background: #d4fdff; box-shadow: 0 0 15px #8aeaf3; animation: scene-glow 3s ease-in-out infinite alternate; }
+.scene-forma { background: #e4e2d9; perspective: 650px; --cube: 100px; --half-cube: 50px; }
+.scene-forma-grid { position: absolute; inset: 35% -25% -50%; background-image: linear-gradient(#7382692b 1px, transparent 1px), linear-gradient(90deg, #7382692b 1px, transparent 1px); background-size: 30px 30px; transform: rotateX(65deg); }
+.scene-forma-plinth { position: absolute; width: 48%; height: 22%; left: 26%; bottom: 8%; border-radius: 50%; background: linear-gradient(#dfdfd1 0 40%, #bcbfac 50%, #cdd0bc); box-shadow: 10px 18px 22px #3c453028; border-top: 2px solid #ffffffe0; }
+.scene-forma-shadow { position: absolute; width: 34%; height: 8%; left: 33%; bottom: 23%; border-radius: 50%; background: #31442655; filter: blur(8px); animation: scene-shadow 7s ease-in-out infinite alternate; z-index: 1; }
+.scene-forma-object { position: absolute; top: 45%; left: 50%; width: var(--cube); height: var(--cube); transform-style: preserve-3d; animation: scene-cube 18s linear infinite; z-index: 2; }
+.scene-forma-object i { display: block; position: absolute; inset: 0; border: 1px solid #edf5d9c7; background: linear-gradient(135deg, #bfc6a8ed, #839270ee); box-shadow: inset 0 0 30px #f4f5d247; backface-visibility: visible; }
+.scene-forma-object .scene-face-front { transform: translateZ(var(--half-cube)); }
+.scene-forma-object .scene-face-back { transform: rotateY(180deg) translateZ(var(--half-cube)); }
+.scene-forma-object .scene-face-right { transform: rotateY(90deg) translateZ(var(--half-cube)); background: #8c9b7b; }
+.scene-forma-object .scene-face-left { transform: rotateY(-90deg) translateZ(var(--half-cube)); background: #b1bd98; }
+.scene-forma-object .scene-face-top { transform: rotateX(90deg) translateZ(var(--half-cube)); background: #d9dfc4; }
+.scene-forma-object .scene-face-bottom { transform: rotateX(-90deg) translateZ(var(--half-cube)); background: #738564; }
+.scene-forma-label { position: absolute; top: 10%; left: 7%; font: 10px monospace; letter-spacing: .2em; color: #4e5c45; }
+.scene-blueprint { background: #102d50; background-image: linear-gradient(#87c4ed1c 1px, transparent 1px), linear-gradient(90deg, #87c4ed1c 1px, transparent 1px); background-size: 20px 20px; }
+.scene-blueprint-drawing { position: absolute; left: 50%; top: 50%; width: 38%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(-30deg) skew(20deg); }
+.scene-blueprint-drawing i { display: block; position: absolute; inset: 0; border: 1px solid #b9e8ff; }
+.scene-blueprint-drawing i:nth-child(2) { transform: translate(12px, -20px); }
+.scene-blueprint-drawing i:nth-child(3) { transform: translate(24px, -40px); }
+.scene-blueprint-drawing i:nth-child(4) { inset: 30%; border-style: dashed; }
+.scene-blueprint-drawing b { position: absolute; width: 140%; height: 140%; top: -20%; left: -20%; border: 1px dashed #8ad9ff66; }
+.scene-blueprint-axis { position: absolute; color: #8ad9ff; font: 9px monospace; letter-spacing: .15em; }
+.scene-axis-x { bottom: 10%; left: 8%; }
+.scene-axis-y { right: 6%; top: 12%; }
+.scene-blueprint-scan { position: absolute; width: 100%; height: 2px; top: 15%; left: 0; background: #8ad9ff80; box-shadow: 0 -10px 25px #8ad9ff50; animation: scene-scan 7s ease-in-out infinite alternate; }
+.scene-ripple { background: #f0d9b6; }
+.scene-ripple-sun { position: absolute; width: 34%; aspect-ratio: 1; border-radius: 50%; top: 12%; left: 33%; background: linear-gradient(#e78756, #efb878); box-shadow: 0 0 45px #ecaa6970; animation: scene-sun 9s ease-in-out infinite alternate; }
+.scene-ripple-horizon { position: absolute; top: 50%; left: 0; width: 100%; height: 50%; background: #a3c5b1; border-top: 1px solid #d9e1c9; }
+.scene-ripple-waves { position: absolute; bottom: 0; left: 0; width: 200%; height: 60%; animation: scene-waves 12s linear infinite; }
+.scene-ripple-waves svg { width: 100%; height: 100%; display: block; }
+@keyframes scene-ring-one { from { transform: rotateX(65deg) rotateY(-25deg) rotateZ(0); } to { transform: rotateX(65deg) rotateY(-25deg) rotateZ(360deg); } }
+@keyframes scene-ring-two { from { transform: rotateX(-50deg) rotateY(55deg) rotateZ(0); } to { transform: rotateX(-50deg) rotateY(55deg) rotateZ(-360deg); } }
+@keyframes scene-cube { from { transform: translate(-50%, -50%) rotateX(-20deg) rotateY(25deg); } 50% { transform: translate(-50%, -65%) rotateX(-15deg) rotateY(205deg); } to { transform: translate(-50%, -50%) rotateX(-20deg) rotateY(385deg); } }
+@keyframes scene-shadow { to { transform: scale(.75); opacity: .5; } }
+@keyframes scene-glow { to { opacity: .65; transform: scale(.95); } }
+@keyframes scene-scan { to { top: 85%; } }
+@keyframes scene-sun { to { transform: translateY(-12px); } }
+@keyframes scene-waves { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .scene-illustration *, .scene-illustration *::before, .scene-illustration *::after { animation: none !important; }
+  .scene-ring-one { transform: rotateX(65deg) rotateY(-25deg); }
+  .scene-ring-two { transform: rotateX(-50deg) rotateY(55deg); }
+  .scene-forma-object { transform: translate(-50%, -50%) rotateX(-20deg) rotateY(25deg); }
+}
