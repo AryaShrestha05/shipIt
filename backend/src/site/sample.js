@@ -63,7 +63,24 @@ const SAMPLE_SALON = {
   },
 };
 
+// Every sample the /dev page can pick: one per kind of business, so we test
+// templates against plumbers and lawyers too, not just food.
+// samples.json holds the rest; each entry is { id, label, business }.
+const SAMPLES = [
+  { id: 'bakery', label: 'Bakery', business: SAMPLE_BUSINESS },
+  { id: 'salon', label: 'Hair salon', business: SAMPLE_SALON },
+].concat(require('./samples.json'));
+
+// The sample with this id, or the bakery if there isn't one.
+function sampleById(id) {
+  const found = SAMPLES.find(function (s) { return s.id === id; });
+  if (found) return found.business;
+  return SAMPLE_BUSINESS;
+}
+
 module.exports = {
   SAMPLE_BUSINESS: SAMPLE_BUSINESS,
   SAMPLE_SALON: SAMPLE_SALON,
+  SAMPLES: SAMPLES,
+  sampleById: sampleById,
 };

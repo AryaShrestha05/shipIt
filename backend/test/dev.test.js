@@ -91,3 +91,30 @@ test('next on an unknown run is a 404', async () => {
   const res = await get('/api/dev/run/zzzzzzzz/next', 'POST');
   assert.strictEqual(res.status, 404);
 });
+
+test('lists sample businesses of many kinds, not just food', async () => {
+  const res = await get('/api/dev/samples');
+  const body = JSON.parse(res.text);
+  const ids = body.map(function (s) { return s.id; });
+  assert.ok(body.length >= 10);
+  assert.ok(ids.includes('bakery'));
+  assert.ok(ids.includes('plumber'));
+  assert.ok(ids.includes('dentist'));
+  assert.ok(body[0].label);
+});
+
+test('every sample business has the shape the builder needs', async () => {
+  const sample = require('../src/site/sample');
+  sample.SAMPLES.forEach(function (s) {
+    assert.ok(s.business.name, s.id + ' has a name');
+    assert.ok(s.business.items.length >= 3, s.id + ' has items');
+    assert.ok(s.business.palette.accent, s.id + ' has colors');
+    assert.ok(s.business.copy.itemsTitle, s.id + ' has copy');
+  });
+});
+
+test('builds a site for any sample by id', async () => {
+  const res = await get('/api/dev/site/hearth/index.html?sample=plumber');
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.text.includes('Fix'));
+});

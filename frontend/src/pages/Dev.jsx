@@ -7,7 +7,6 @@ import { fileToBase64, postStream } from '../lib/stream';
 
 // The order sections appear on the page.
 const TYPES = ['hero', 'marquee', 'highlight', 'items', 'story', 'visit', 'cta'];
-const SAMPLES = ['bakery', 'salon'];
 
 // 'hero-split' -> 'hero'
 function typeOf(id) {
@@ -35,6 +34,7 @@ export default function Dev() {
   // function to change it. Calling a setter re-draws the page.
   const [catalog, setCatalog] = useState({ themes: [], sections: [] });
   const [theme, setTheme] = useState('hearth');
+  const [samples, setSamples] = useState([]); // e.g. [{ id: 'plumber', label: 'Plumber' }, ...]
   const [sample, setSample] = useState('bakery');
   const [chosen, setChosen] = useState({}); // e.g. { hero: 'hero-split', items: 'items-cards' }
   const [width, setWidth] = useState(1280);
@@ -56,6 +56,10 @@ export default function Dev() {
     fetch('/api/dev/sections')
       .then(function (res) { return res.json(); })
       .then(function (body) { setCatalog(body); });
+    // The kinds of business we can test with (bakery, plumber, dentist, ...).
+    fetch('/api/dev/samples')
+      .then(function (res) { return res.json(); })
+      .then(function (body) { setSamples(body); });
     loadAutoLayout('bakery');
   }, []);
 
@@ -93,8 +97,8 @@ export default function Dev() {
       <p>
         Business:{' '}
         <select value={sample} onChange={function (e) { setSample(e.target.value); loadAutoLayout(e.target.value); }}>
-          {SAMPLES.map(function (id) {
-            return <option key={id} value={id}>{id}</option>;
+          {samples.map(function (s) {
+            return <option key={s.id} value={s.id}>{s.label}</option>;
           })}
         </select>{' '}
         Theme:{' '}

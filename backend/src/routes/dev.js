@@ -9,10 +9,17 @@ const sample = require('../site/sample');
 // feature on its own before the real editor exists.
 const router = express.Router();
 
+// ?sample=plumber → the plumber sample. No ?sample → the bakery.
 function sampleFor(req) {
-  if (req.query.sample === 'salon') return sample.SAMPLE_SALON;
-  return sample.SAMPLE_BUSINESS;
+  return sample.sampleById(req.query.sample);
 }
+
+// GET /api/dev/samples — every sample business, for the /dev dropdown
+router.get('/dev/samples', function (req, res) {
+  res.json(sample.SAMPLES.map(function (s) {
+    return { id: s.id, label: s.label };
+  }));
+});
 
 // GET /api/dev/sections — every theme and section variant we have
 router.get('/dev/sections', function (req, res) {
