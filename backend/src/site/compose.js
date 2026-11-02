@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const fill = require('./fill');
+const scenes = require('./scenes');
 
 // Builds a website out of hand-made sections.
 //
@@ -12,10 +13,14 @@ const fill = require('./fill');
 //   sections/<id>.html   — one file per section variant, e.g. hero-split.html
 //   base.css             — styles for every section, using theme tokens only
 //   themes/<theme>.css   — fonts, colors, corners, texture
+//   gallery.css          — extra effects and hero artwork for the gallery themes
 //   effects.js           — the motion (letter reveals, marquee, spotlight, tilt)
 
 const TEMPLATES_DIR = fill.TEMPLATES_DIR;
 const SECTIONS_DIR = path.join(TEMPLATES_DIR, 'sections');
+
+// Every font the gallery themes use, in one link.
+const GALLERY_FONTS = 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Manrope:wght@400;500;600;700&family=Bricolage+Grotesque:wght@400;600&family=DM+Sans:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Archivo+Black&display=swap';
 
 const THEMES = {
   hearth: {
@@ -27,6 +32,15 @@ const THEMES = {
   noir: {
     fonts: 'https://fonts.googleapis.com/css2?family=Yeseva+One&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&display=swap',
   },
+  // The /blocks gallery themes. They set their own colors (bloom is always
+  // pink and green), except canvas, which uses the business's colors.
+  canvas: { fonts: GALLERY_FONTS },
+  bloom: { fonts: GALLERY_FONTS },
+  zest: { fonts: GALLERY_FONTS },
+  blueprint: { fonts: GALLERY_FONTS },
+  ripple: { fonts: GALLERY_FONTS },
+  orbit: { fonts: GALLERY_FONTS },
+  forma: { fonts: GALLERY_FONTS },
 };
 
 // Every section variant on disk, e.g. ['cta-band', 'hero-centered', ...]
@@ -65,7 +79,7 @@ function composeSite(layout, business) {
     .split('{{fontsHref}}').join(THEMES[theme].fonts);
 
   // Last step: fill in the business's name, items, colors and wording.
-  return fill.fillTemplate(page, business);
+  return fill.fillTemplate(scenes.addScene(page, theme), business);
 }
 
 // A tiny repeatable random number generator: the same seed always gives the
@@ -91,12 +105,16 @@ function pickVariant(type, random) {
   return options[Math.floor(random() * options.length)];
 }
 
-function pickLayout(business) {
+// options.theme: the look the user picked. Without one (or an unknown one),
+// the business's vibe decides.
+function pickLayout(business, options) {
+  if (!options) options = {};
   const random = seededRandom(String(business.name || ''));
 
   let theme = 'hearth';
   if (business.vibe === 'minimal') theme = 'atelier';
   if (business.vibe === 'bold') theme = 'noir';
+  if (THEMES[options.theme]) theme = options.theme;
 
   const sections = [pickVariant('hero', random)];
   // About 60% of sites get the scrolling marquee.
@@ -121,11 +139,12 @@ function siteFiles(theme) {
   return [
     { from: path.join(TEMPLATES_DIR, 'base.css'), to: 'base.css' },
     { from: path.join(TEMPLATES_DIR, 'themes', theme + '.css'), to: 'theme.css' },
+    { from: path.join(TEMPLATES_DIR, 'gallery.css'), to: 'gallery.css' },
     { from: path.join(TEMPLATES_DIR, 'effects.js'), to: 'effects.js' },
   ];
 }
 
-// Writes a finished site into a folder: index.html, the three site files,
+// Writes a finished site into a folder: index.html, the four site files,
 // an empty custom.css (Ship puts style changes there, so the shared
 // stylesheets are never rewritten), and layout.json (so we always know which
 // sections a site was built from).

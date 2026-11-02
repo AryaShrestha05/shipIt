@@ -31,7 +31,7 @@ async function get(url, method) {
 test('lists themes and section variants', async () => {
   const res = await get('/api/dev/sections');
   const body = JSON.parse(res.text);
-  assert.deepStrictEqual(body.themes, ['hearth', 'atelier', 'noir']);
+  assert.deepStrictEqual(body.themes, ['hearth', 'atelier', 'noir', 'canvas', 'bloom', 'zest', 'blueprint', 'ripple', 'orbit', 'forma']);
   assert.ok(body.sections.includes('hero-split'));
 });
 

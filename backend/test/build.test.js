@@ -80,3 +80,9 @@ test('POST /api/build reports an error event when reading the photo fails', asyn
   assert.strictEqual(last.type, 'error');
   assert.match(last.message, /quota/);
 });
+
+test('POST /api/build builds in the theme the user picked', async () => {
+  const res = await post(build.createBuildRouter(fakeDeps), { imageBase64: 'AAA', mimeType: 'image/png', theme: 'bloom' });
+  const built = events(res.text).find(function (e) { return e.type === 'built'; });
+  assert.strictEqual(built.layout.theme, 'bloom');
+});

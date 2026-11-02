@@ -10,7 +10,7 @@ const sse = require('./sse');
 
 // POST /api/build — photo in, website out.
 //
-// Body: { imageBase64, mimeType, sentence }
+// Body: { imageBase64, mimeType, sentence, theme }  (theme: the look the user picked)
 // Streams these events:
 //   run        { runId }                — the new run's id
 //   status     "reading your photo"
@@ -68,8 +68,8 @@ function createBuildRouter(deps) {
       send({ type: 'extracted', business: business });
 
       send({ type: 'status', message: 'building your site' });
-      // Pick a theme and sections (the same business always gets the same choice).
-      const layout = compose.pickLayout(business);
+      // The picked theme, plus sections (the same business always gets the same sections).
+      const layout = compose.pickLayout(business, { theme: body.theme });
       const dir = workspace.versionDir(runId, 1);
       // Write index.html + the css/js files into workspaces/<runId>/v1/.
       compose.writeSite(dir, layout, business);

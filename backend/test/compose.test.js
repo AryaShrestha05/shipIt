@@ -89,7 +89,7 @@ test('every site has the planted dead "#order" link for QA to find', () => {
 for (const theme of Object.keys(compose.THEMES)) {
   test('site files exist for theme "' + theme + '"', () => {
     const files = compose.siteFiles(theme);
-    assert.deepStrictEqual(files.map(function (f) { return f.to; }).sort(), ['base.css', 'effects.js', 'theme.css']);
+    assert.deepStrictEqual(files.map(function (f) { return f.to; }).sort(), ['base.css', 'effects.js', 'gallery.css', 'theme.css']);
     for (const f of files) assert.ok(fs.existsSync(f.from), f.from);
   });
 }
@@ -100,4 +100,39 @@ test('writeSite adds an empty custom.css that the page loads last', () => {
   const html = require('fs').readFileSync(require('path').join(dir, 'index.html'), 'utf8');
   assert.ok(require('fs').existsSync(require('path').join(dir, 'custom.css')));
   assert.ok(html.indexOf('href="custom.css"') > html.indexOf('href="theme.css"'));
+});
+
+// The themes from the /blocks gallery, so a picked look is the built look.
+const GALLERY_THEMES = ['canvas', 'noir', 'bloom', 'zest', 'blueprint', 'ripple', 'orbit', 'forma'];
+
+test('every gallery theme can be built', () => {
+  for (const theme of GALLERY_THEMES) {
+    assert.ok(compose.THEMES[theme], theme + ' is a builder theme');
+    const html = compose.composeSite({ theme: theme, sections: ['hero-split'] }, sample.SAMPLE_BUSINESS);
+    assert.ok(html.includes('class="theme-' + theme + '"'), theme + ' is on the page');
+  }
+});
+
+test('a theme with a scene puts its artwork in the hero', () => {
+  const html = compose.composeSite({ theme: 'ripple', sections: ['hero-split', 'items-cards'] }, sample.SAMPLE_BUSINESS);
+  assert.ok(html.includes('scene-ripple'));
+  assert.ok(html.indexOf('theme-scene') > html.indexOf('class="section hero'));
+  const plain = compose.composeSite({ theme: 'hearth', sections: ['hero-split'] }, sample.SAMPLE_BUSINESS);
+  assert.ok(!plain.includes('theme-scene'));
+});
+
+test('gallery effects come along without switching off our animations or noir colors', () => {
+  const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'shipit-theme-'));
+  compose.writeSite(dir, { theme: 'bloom', sections: ['hero-split'] }, sample.SAMPLE_BUSINESS);
+  const css = fs.readFileSync(path.join(dir, 'theme.css'), 'utf8') + fs.readFileSync(path.join(dir, 'gallery.css'), 'utf8');
+  assert.ok(css.includes('.theme-bloom .hero::before'), 'bloom effect is there');
+  assert.ok(css.includes('.scene-ripple'), 'scene styles are there');
+  assert.ok(!css.includes('.will-reveal'), 'reveal animations stay on');
+  assert.ok(!css.includes('.theme-noir'), 'our noir is untouched');
+});
+
+test('pickLayout uses the theme the user picked, or falls back to the vibe', () => {
+  assert.strictEqual(compose.pickLayout(sample.SAMPLE_BUSINESS, { theme: 'zest' }).theme, 'zest');
+  assert.strictEqual(compose.pickLayout(sample.SAMPLE_BUSINESS, { theme: 'nope' }).theme, 'hearth');
+  assert.strictEqual(compose.pickLayout(sample.SAMPLE_BUSINESS).theme, 'hearth');
 });
