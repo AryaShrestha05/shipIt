@@ -291,3 +291,9 @@
   right: max(16px, calc((100% - 1440px) / 2));
   z-index: 20;
 }
+
+/* Setup steps: the wide step (theme picker) and the "Look: Ripple · change" line */
+.ed-setup-wide { width: min(1100px, 100%); }
+.ed-look { margin: -16px 0 20px; color: var(--e-soft); font-size: 14px; }
+.ed-look strong { color: var(--e-text); font-weight: 600; }
+.ed-photo .kp { width: 100%; }

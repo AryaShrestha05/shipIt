@@ -9,6 +9,7 @@ export function build(request, onEvent, signal) {
     imageBase64: request.imageBase64,
     mimeType: request.mimeType,
     sentence: request.sentence,
+    theme: request.theme, // the look picked in step 2
   }, onEvent, signal);
 }
 

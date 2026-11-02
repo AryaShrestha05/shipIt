@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion as Motion } from 'framer-motion';
 import { canShip, editorReducer, initialState } from '../editor/editorReducer';
 import * as api from '../editor/api';
@@ -10,11 +10,17 @@ import SitePreview from '../editor/SitePreview';
 import PinList from '../editor/PinList';
 import { attachPicker, drawPins } from '../editor/picker';
 import KeyPanel from '../editor/KeyPanel';
+import ThemePicker from '../editor/ThemePicker';
+import { setupStep, themeFromSearch } from '../editor/setupStep';
+import { THEMES } from '../blocks/catalog';
 import { loadAiSettings } from '../lib/aiSettings';
 import './Editor.css';
 
 // /try — the ShipIt editor. One page that changes with state.stage:
-//   photo    → PhotoDrop
+//   photo    → three setup steps first (see setupStep.js):
+//                1 key   → KeyPanel (an AI key is required)
+//                2 theme → ThemePicker (a look is required)
+//                3 photo → PhotoDrop
 //   building → BuildStatus
 //   editing  → the site + the side rail with your notes (pins)
 
@@ -36,6 +42,11 @@ export default function Editor() {
   const pinsRef = useRef(state.pins);
   const [keyOpen, setKeyOpen] = useState(false); // is the "Your AI key" panel open?
   const [keyHint, setKeyHint] = useState(loadAiSettings().keyHint); // e.g. "sk-…cdef", or '' for no key
+  // The picked look. ?theme=ripple (from the landing page) picks it in advance.
+  const location = useLocation(); // the current address, e.g. /try?theme=ripple
+  const [theme, setTheme] = useState(themeFromSearch(location.search));
+  const step = setupStep({ keyHint: keyHint, theme: theme });
+  const themeName = theme ? THEMES.find(function (t) { return t.id === theme; }).name : '';
 
   // The picker is attached once per page load, so it reads the latest pins
   // from this ref instead of from a stale copy.
@@ -83,7 +94,7 @@ export default function Editor() {
     stopRef.current = controller;
     try {
       const imageBase64 = await fileToBase64(choice.file);
-      await api.build({ imageBase64: imageBase64, mimeType: choice.file.type, sentence: choice.sentence }, function (event) {
+      await api.build({ imageBase64: imageBase64, mimeType: choice.file.type, sentence: choice.sentence, theme: theme }, function (event) {
         // Every live event from the server goes into the reducer.
         dispatch({ type: 'SSE_EVENT', event: event });
       }, controller.signal);
@@ -126,9 +137,31 @@ export default function Editor() {
       {/* AnimatePresence lets the old screen fade out before the new one fades in. */}
       <AnimatePresence mode="wait">
         {/* One screen per stage. cond ? (screen) : null means "show this screen only if cond". */}
-        {state.stage === 'photo' ? (
-          <Motion.main key="photo" className="ed-center" {...fade}>
-            <PhotoDrop onBuild={startBuild} error={state.error} />
+        {state.stage === 'photo' && step === 'key' ? (
+          <Motion.main key="step-key" className="ed-center" {...fade}>
+            <div className="ed-photo">
+              <p className="ed-kicker">step 1 of 3</p>
+              <h1 className="ed-headline">Add your AI key.</h1>
+              <p className="ed-lede">ShipIt is free: it runs on your own Gemini, OpenAI or Claude key. It's encrypted and stays on this device.</p>
+              <KeyPanel onChange={function (settings) { setKeyHint(settings.keyHint); }} />
+            </div>
+          </Motion.main>
+        ) : null}
+
+        {state.stage === 'photo' && step === 'theme' ? (
+          <Motion.main key="step-theme" className="ed-center" {...fade}>
+            <div className="ed-setup-wide">
+              <p className="ed-kicker">step 2 of 3</p>
+              <h1 className="ed-headline">Pick a look.</h1>
+              <p className="ed-lede">Your site is built in this style. You can change anything afterwards by clicking and talking.</p>
+              <ThemePicker value={theme} onPick={setTheme} />
+            </div>
+          </Motion.main>
+        ) : null}
+
+        {state.stage === 'photo' && step === 'photo' ? (
+          <Motion.main key="step-photo" className="ed-center" {...fade}>
+            <PhotoDrop onBuild={startBuild} error={state.error} look={themeName} onChangeLook={function () { setTheme(''); }} />
           </Motion.main>
         ) : null}
 

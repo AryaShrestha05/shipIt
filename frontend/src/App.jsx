@@ -1,15 +1,15 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Dev from './pages/Dev';
 import Blocks from './pages/Blocks';
 import ThemeStudio from './pages/ThemeStudio';
 import Editor from './pages/Editor';
+import Landing from './pages/Landing';
 
-// "/" goes to the editor until the real landing page (Feature 13) exists.
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/try" replace />} />
       {/* Each Route: when the address matches path, show that page. */}
+      <Route path="/" element={<Landing />} />
       <Route path="/try" element={<Editor />} />
       <Route path="/dev" element={<Dev />} />
       <Route path="/blocks" element={<Blocks />} />

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 
-// Step 1: pick or drop a photo, add one optional sentence, press Build.
+// Step 3: pick or drop a photo, add one optional sentence, press Build.
 // props.onBuild({ file, sentence }) is called when the user presses Build.
+// props.look: the picked theme's name; props.onChangeLook goes back to step 2.
 export default function PhotoDrop(props) {
   const [file, setFile] = useState(null);
   const [previewSrc, setPreviewSrc] = useState(null);
@@ -22,9 +23,15 @@ export default function PhotoDrop(props) {
 
   return (
     <div className="ed-photo">
-      <p className="ed-kicker">step one</p>
+      <p className="ed-kicker">step 3 of 3</p>
       <h1 className="ed-headline">Show us your business.</h1>
       <p className="ed-lede">A menu, a sign, a storefront. We'll read it and build your website in about a minute.</p>
+      {props.look ? (
+        <p className="ed-look">
+          Look: <strong>{props.look}</strong>{' '}
+          <button className="ed-link" onClick={props.onChangeLook}>change</button>
+        </p>
+      ) : null}
 
       <label
         className={'ed-shell ed-drop' + (dragging ? ' is-dragging' : '') + (previewSrc ? ' has-photo' : '')}
