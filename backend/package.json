@@ -20,5 +20,13 @@
   "devDependencies": {
     "nodemon": "^3.1.14"
   },
-  "private": true
+  "private": true,
+  "nodemonConfig": {
+    "watch": [
+      "src",
+      "templates",
+      ".env"
+    ],
+    "ext": "js,json,html,css"
+  }
 }
