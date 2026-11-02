@@ -101,7 +101,7 @@ test('claude: a refusal becomes a plain explanation instead of a crash', async (
 
 test('claude: refusal fallbacks are on for opus 5.5 and left off for haiku', async () => {
   const client = fakeClaude([{ stop_reason: 'end_turn', content: [{ type: 'text', text: 'ok' }] }]);
-  await providers.createAI({ provider: 'claude', apiKey: 'k' }, client).chatModel({ system: 's', tools: TOOLS }).startChat().sendMessage('go');
+  await providers.createAI({ provider: 'claude', apiKey: 'k', model: 'claude-opus-5-5' }, client).chatModel({ system: 's', tools: TOOLS }).startChat().sendMessage('go');
   await providers.createAI({ provider: 'claude', apiKey: 'k', model: 'claude-haiku-5-5' }, client).chatModel({ system: 's', tools: TOOLS }).startChat().sendMessage('go');
   assert.strictEqual(client.sent[0].model, 'claude-opus-5-5');
   assert.strictEqual(client.sent[0].fallbacks, 'default');
@@ -220,4 +220,11 @@ test('aiFromRequest falls back to the server Gemini key, and fails clearly witho
   assert.throws(function () { fromRequest.aiFromRequest(noHeaders); }, fromRequest.NoKeyError);
 
   if (saved !== undefined) process.env.GEMINI_API_KEY = saved;
+});
+
+test('claude: defaults to haiku 5.5, the cheapest model', async () => {
+  const client = fakeClaude([{ stop_reason: 'end_turn', content: [{ type: 'text', text: 'ok' }] }]);
+  await providers.createAI({ provider: 'claude', apiKey: 'k' }, client).chatModel({ system: 's', tools: TOOLS }).startChat().sendMessage('go');
+  assert.strictEqual(client.sent[0].model, 'claude-haiku-5-5');
+  assert.strictEqual(client.sent[0].fallbacks, undefined);
 });

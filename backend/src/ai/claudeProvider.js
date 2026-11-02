@@ -4,7 +4,9 @@ const Anthropic = require('@anthropic-ai/sdk');
 // The agent loop speaks "Gemini chat" (sendMessage → functionCalls()/text()),
 // so this file translates both ways.
 
-const DEFAULT_MODEL = 'claude-opus-5-5';
+// Haiku 5.5: $0.10 in / $0.50 out per million tokens, 40x cheaper than Opus.
+// Pick Sonnet or Opus in the key panel's Model box for harder edits.
+const DEFAULT_MODEL = 'claude-haiku-5-5';
 
 // Models that support server-side refusal fallbacks: if Claude declines a
 // request, the API re-runs it on a suitable model instead of failing.

@@ -15,7 +15,7 @@ const STORAGE_KEY = 'shipit.ai';
 export const PROVIDERS = [
   { id: 'gemini', name: 'Gemini', defaultModel: 'gemini-2.5-flash', voice: true },
   { id: 'openai', name: 'OpenAI', defaultModel: 'gpt-5-mini', voice: true },
-  { id: 'claude', name: 'Claude', defaultModel: 'claude-opus-5-5', voice: false },
+  { id: 'claude', name: 'Claude', defaultModel: 'claude-haiku-5-5', voice: false },
 ];
 
 // Made on first use, so pages that never touch the key never open IndexedDB.
