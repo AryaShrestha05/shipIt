@@ -1,0 +1,57 @@
+/* The "Your AI key" panel. Uses the editor's colors when inside it, with
+   fallbacks so it also works on the plain /dev page. */
+
+.kp {
+  width: min(380px, calc(100vw - 32px));
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--e-card, #141415);
+  color: var(--e-text, #f1ede6);
+  box-shadow: inset 0 0 0 1px var(--e-line, rgba(255, 255, 255, 0.08)), 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kp-head { display: flex; align-items: center; justify-content: space-between; }
+.kp-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.kp-close { border: 0; background: transparent; color: var(--e-soft, #8b877f); font-size: 20px; cursor: pointer; }
+
+.kp-field { display: flex; flex-direction: column; gap: 6px; }
+.kp-field span { color: var(--e-soft, #8b877f); font-size: 12px; }
+.kp-field em { font-style: normal; opacity: 0.7; }
+.kp-field input,
+.kp-field select {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px var(--e-line, rgba(255, 255, 255, 0.08));
+  color: inherit;
+  font: inherit;
+}
+.kp-field input:focus,
+.kp-field select:focus { outline: none; box-shadow: inset 0 0 0 1px rgba(241, 237, 230, 0.4); }
+
+.kp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.kp-actions button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.4s var(--e-ease, ease), opacity 0.3s;
+}
+.kp-actions button:active { transform: scale(0.97); }
+.kp-actions button:disabled { opacity: 0.35; cursor: not-allowed; }
+.kp-actions .kp-primary { background: var(--e-text, #f1ede6); color: var(--e-bg, #0b0b0c); font-weight: 600; }
+
+.kp-note,
+.kp-status,
+.kp-lock { margin: 0; font-size: 12px; line-height: 1.5; }
+.kp-status { color: var(--e-text, #f1ede6); }
+.kp-note,
+.kp-lock { color: var(--e-soft, #8b877f); }

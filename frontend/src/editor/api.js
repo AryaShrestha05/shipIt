@@ -14,7 +14,7 @@ export function build(request, onEvent, signal) {
 
 // A voice clip in, text out. Throws with a readable message if it fails.
 export async function transcribe(clip) {
-  const headers = aiHeaders();
+  const headers = await aiHeaders();
   headers['Content-Type'] = 'application/json';
   const res = await fetch('/api/transcribe', {
     method: 'POST',

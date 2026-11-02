@@ -1,29 +1,47 @@
-// The user's AI choice and key, kept in this browser only.
-// Every request to the backend adds them as headers (see aiHeaders), and the
-// backend uses the key for that one request without saving it.
+import { createKeyVault } from './keyVault';
+
+// The user's AI choice and key, kept on this device only.
+//
+// Two places:
+//   - localStorage 'shipit.ai': the provider, model and a masked hint
+//     like "sk-…cdef". Nothing secret.
+//   - the key vault (keyVault.js): the real key, encrypted.
+//
+// Every request to the backend adds the key as headers (see aiHeaders), and
+// the backend uses it for that one request without saving it.
 
 const STORAGE_KEY = 'shipit.ai';
 
 export const PROVIDERS = [
   { id: 'gemini', name: 'Gemini', defaultModel: 'gemini-2.5-flash', voice: true },
-  { id: 'openai', name: 'OpenAI', defaultModel: 'gpt-5.5', voice: true },
+  { id: 'openai', name: 'OpenAI', defaultModel: 'gpt-5-mini', voice: true },
   { id: 'claude', name: 'Claude', defaultModel: 'claude-opus-5-5', voice: false },
 ];
 
-// Returns { provider, apiKey, model }. Missing or unreadable storage gives an
-// empty key, which means "use the server's own key".
-export function loadAiSettings() {
-  try {
-    // localStorage = a small storage box in this browser that survives page reloads.
-    const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
-    if (saved && saved.provider) return saved;
-  } catch {
-    // Private windows can block storage; fall through to the defaults.
-  }
-  return { provider: 'gemini', apiKey: '', model: '' };
+// Made on first use, so pages that never touch the key never open IndexedDB.
+let vault = null;
+function getVault() {
+  if (!vault) vault = createKeyVault();
+  return vault;
 }
 
-export function saveAiSettings(settings) {
+// Tests swap in a pretend vault.
+export function setVault(replacement) {
+  vault = replacement;
+}
+
+// Reads the raw saved settings, or null.
+function readStored() {
+  try {
+    // localStorage = a small storage box in this browser that survives page reloads.
+    return JSON.parse(window.localStorage.getItem(STORAGE_KEY));
+  } catch {
+    // Private windows can block storage.
+    return null;
+  }
+}
+
+function writeStored(settings) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   } catch {
@@ -31,13 +49,61 @@ export function saveAiSettings(settings) {
   }
 }
 
-// Headers to send with every backend request.
-export function aiHeaders() {
+// Returns { provider, model, keyHint }. Never the key itself.
+// An empty keyHint means "no key saved: use the server's own key".
+export function loadAiSettings() {
+  const saved = readStored();
+  if (saved && saved.provider) {
+    return { provider: saved.provider, model: saved.model || '', keyHint: saved.keyHint || '' };
+  }
+  return { provider: 'gemini', model: '', keyHint: '' };
+}
+
+// Saves the provider and model. The key is saved separately (saveApiKey).
+export function saveAiSettings(settings) {
+  const current = loadAiSettings();
+  writeStored({ provider: settings.provider, model: settings.model || '', keyHint: current.keyHint });
+}
+
+// Encrypts and saves the key, and remembers which provider it's for.
+export async function saveApiKey(provider, apiKey) {
+  await getVault().save(apiKey);
+  const current = loadAiSettings();
+  writeStored({ provider: provider, model: current.model, keyHint: maskKey(apiKey) });
+}
+
+export async function removeApiKey() {
+  await getVault().remove();
+  const current = loadAiSettings();
+  writeStored({ provider: current.provider, model: current.model, keyHint: '' });
+}
+
+// "sk-test-1234567890abcdef" -> "sk-…cdef": enough to recognise, not enough to use.
+export function maskKey(apiKey) {
+  if (!apiKey) return '';
+  if (apiKey.length < 12) return '••••';
+  return apiKey.slice(0, 3) + '…' + apiKey.slice(-4);
+}
+
+// Older versions saved the key as plain text. Move it into the vault and
+// wipe the plain copy.
+async function moveOldPlainKey() {
+  const saved = readStored();
+  if (saved && saved.apiKey) {
+    await saveApiKey(saved.provider || 'gemini', saved.apiKey);
+  }
+}
+
+// Headers to send with every backend request. Async because unlocking the
+// key takes a moment.
+export async function aiHeaders() {
+  await moveOldPlainKey();
   const settings = loadAiSettings();
+  const apiKey = await getVault().load();
   const headers = {};
-  if (settings.apiKey) {
+  if (apiKey) {
     headers['x-shipit-provider'] = settings.provider;
-    headers['x-shipit-key'] = settings.apiKey;
+    headers['x-shipit-key'] = apiKey;
     if (settings.model) headers['x-shipit-model'] = settings.model;
   }
   return headers;

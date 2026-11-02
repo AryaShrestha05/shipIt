@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PROVIDERS, aiHeaders, loadAiSettings, providerInfo, saveAiSettings } from '../lib/aiSettings';
+import KeyPanel from '../editor/KeyPanel';
 import { fileToBase64, postStream } from '../lib/stream';
 
 // Bare test page — no design on purpose. Each feature adds a section here so
@@ -244,63 +244,12 @@ function PhotoBuild() {
   );
 }
 
-// Feature 4b: bring your own key. Saved in this browser; sent as headers.
+// Feature 4b: bring your own key. The same panel the editor uses.
 function AiSettings() {
-  const [settings, setSettings] = useState(loadAiSettings());
-  const [status, setStatus] = useState('');
-
-  function update(field, value) {
-    const next = Object.assign({}, settings);
-    next[field] = value;
-    if (field === 'provider') next.model = '';
-    setSettings(next);
-    saveAiSettings(next);
-    setStatus('');
-  }
-
-  function testKey() {
-    setStatus('testing...');
-    fetch('/api/ai/check', { method: 'POST', headers: aiHeaders() })
-      .then(function (res) { return res.json(); })
-      .then(function (body) {
-        if (body.ok) {
-          setStatus('works: ' + body.provider + ' / ' + body.model + (body.canTranscribe ? '' : ' (no voice — type instead)'));
-        } else {
-          setStatus('failed: ' + body.error);
-        }
-      });
-  }
-
-  const info = providerInfo(settings.provider);
-
   return (
-    <div style={{ border: '1px solid #000', padding: 8, marginBottom: 16 }}>
+    <div style={{ marginBottom: 16 }}>
       <h2>Feature 4b — AI settings (your own key)</h2>
-      <p>
-        Provider:{' '}
-        <select value={settings.provider} onChange={function (e) { update('provider', e.target.value); }}>
-          {PROVIDERS.map(function (p) {
-            return <option key={p.id} value={p.id}>{p.name}</option>;
-          })}
-        </select>{' '}
-        Key:{' '}
-        <input
-          type="password"
-          value={settings.apiKey}
-          placeholder="empty = use the server key"
-          onChange={function (e) { update('apiKey', e.target.value); }}
-          style={{ width: 260 }}
-        />{' '}
-        Model:{' '}
-        <input
-          value={settings.model}
-          placeholder={info.defaultModel}
-          onChange={function (e) { update('model', e.target.value); }}
-        />{' '}
-        <button onClick={testKey}>test key</button>
-      </p>
-      <p>{status}{info.voice ? '' : ' — note: ' + info.name + ' cannot do voice; pins will use typing.'}</p>
-      <p>Your key stays in this browser and is sent only with your own requests. The server never saves it.</p>
+      <KeyPanel />
     </div>
   );
 }

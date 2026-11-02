@@ -2,7 +2,8 @@ const openaiSdk = require('openai');
 
 // OpenAI, behind the same small interface as the other providers.
 
-const DEFAULT_MODEL = 'gpt-5.5';
+// gpt-5-mini: about 20x cheaper than gpt-5.5, and enough for our edits.
+const DEFAULT_MODEL = 'gpt-5-mini';
 const TRANSCRIBE_MODEL = 'gpt-4o-mini-transcribe';
 
 function create(options, client) {

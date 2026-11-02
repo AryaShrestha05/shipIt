@@ -9,7 +9,7 @@ import { aiHeaders } from './aiSettings';
 // Resolves when the stream ends. A non-stream error (400, 401) comes back
 // as one { type: 'error' } event so callers handle every failure the same way.
 export async function postStream(url, body, onEvent, signal) {
-  const headers = aiHeaders();
+  const headers = await aiHeaders();
   headers['Content-Type'] = 'application/json';
   const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: signal });
 

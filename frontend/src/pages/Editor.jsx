@@ -9,6 +9,8 @@ import BuildStatus from '../editor/BuildStatus';
 import SitePreview from '../editor/SitePreview';
 import PinList from '../editor/PinList';
 import { attachPicker, drawPins } from '../editor/picker';
+import KeyPanel from '../editor/KeyPanel';
+import { loadAiSettings } from '../lib/aiSettings';
 import './Editor.css';
 
 // /try — the ShipIt editor. One page that changes with state.stage:
@@ -32,6 +34,8 @@ export default function Editor() {
   const [siteDoc, setSiteDoc] = useState(null); // the website's page inside the iframe
   const [focusId, setFocusId] = useState(null); // which note gets the cursor
   const pinsRef = useRef(state.pins);
+  const [keyOpen, setKeyOpen] = useState(false); // is the "Your AI key" panel open?
+  const [keyHint, setKeyHint] = useState(loadAiSettings().keyHint); // e.g. "sk-…cdef", or '' for no key
 
   // The picker is attached once per page load, so it reads the latest pins
   // from this ref instead of from a stale copy.
@@ -101,8 +105,23 @@ export default function Editor() {
       <nav className="ed-nav">
         <Link to="/" className="ed-brand">shipit.</Link>
         <span className="ed-nav-name">{name}</span>
-        {state.stage !== 'photo' ? <button className="ed-link" onClick={startOver}>start over</button> : <Link to="/blocks" className="ed-link">blocks</Link>}
+        <span className="ed-nav-right">
+          {/* Shows "sk-…cdef" when a key is saved, so you can tell at a glance. */}
+          <button className="ed-link ed-key-btn" onClick={function () { setKeyOpen(!keyOpen); }}>
+            {keyHint ? '🔒 ' + keyHint : 'add AI key'}
+          </button>
+          {state.stage !== 'photo' ? <button className="ed-link" onClick={startOver}>start over</button> : <Link to="/blocks" className="ed-link">blocks</Link>}
+        </span>
       </nav>
+
+      {keyOpen ? (
+        <div className="ed-key-pop">
+          <KeyPanel
+            onClose={function () { setKeyOpen(false); }}
+            onChange={function (settings) { setKeyHint(settings.keyHint); }}
+          />
+        </div>
+      ) : null}
 
       {/* AnimatePresence lets the old screen fade out before the new one fades in. */}
       <AnimatePresence mode="wait">
