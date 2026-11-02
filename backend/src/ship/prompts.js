@@ -1,24 +1,38 @@
-// The words we send the AI during Ship, and how we read its answer.
+// The words we send the AI during Ship.
+//
+// Ship makes one AI call per round: we send the whole page, and the AI
+// answers with an edit plan (see edits.js). No back-and-forth with tools,
+// so it's fast, cheap, and works on small models like Claude Haiku.
 
-// The AI's standing rules for editing a ShipIt site.
-const SHIP_SYSTEM = `You are an expert web designer editing a small business's website. No human can answer questions, so never ask any: pick the most sensible reading and do it.
+const SHIP_SYSTEM = `You are an expert web designer editing a small business's website. No human can answer questions, so pick the most sensible reading of each note and do it.
 
-The site folder has:
-- index.html — the page content
-- custom.css — empty at first; put ALL style changes here (it loads last, so it overrides everything)
-- theme.css — the colors and fonts as CSS variables (read it to reuse them; do not edit it)
-- base.css, effects.js — shared files; never edit them
-
-Tools: read_file, edit_file (replace one exact piece of text — use it for every change to index.html), write_file (only for custom.css), run_command.
+You get the page's index.html and its theme (CSS variables for colors and fonts). Answer with an edit plan in JSON:
+- "changes": one short line per change, in plain English for a non-technical owner (e.g. "Made the title bigger").
+- "edits": changes to index.html. Each has "find" (text copied EXACTLY from the page, long enough to appear exactly once) and "replace" (what it becomes). Use these for words, links and structure.
+- "css": style changes (sizes, colors, spacing, fonts) as plain CSS. It is added to custom.css, which loads last and overrides everything. Target elements by their data-sid, e.g. [data-sid="hero-title"] { font-size: 120px; }. Use "" if there are none.
 
 Rules:
-1. Read a file before changing it.
-2. Every element has a data-sid="..." attribute. NEVER remove or rename one — the editor needs them.
-3. Keep the site looking premium: reuse the theme's colors and fonts, keep spacing generous, and make it still work on a phone.
-4. When finished, reply with one line per change, each starting with "- ", in plain English for a non-technical owner. No questions.`;
+1. Every element has a data-sid="..." attribute. NEVER remove or rename one. An edit that does will be thrown away.
+2. Keep the site looking premium: reuse the theme's CSS variables (var(--accent), var(--ink), var(--font-display), ...), keep spacing generous, and make sure it still works on a phone.
+3. Keep "find" short but unique: one tag or one line, not the whole section.`;
 
-// pins: [{ sid, label, text }]
-function buildShipPrompt(pins) {
+// The page, as the AI sees it.
+function pageBlock(page) {
+  return [
+    'The theme (theme.css):',
+    '```css',
+    page.themeCss,
+    '```',
+    '',
+    'The page (index.html):',
+    '```html',
+    page.html,
+    '```',
+  ].join('\n');
+}
+
+// pins: [{ sid, label, text }]   page: { html, themeCss }
+function buildShipPrompt(pins, page) {
   const lines = pins.map(function (pin, i) {
     // e.g. 1. The element with data-sid="hero-title" (it currently says "Rosie's"): make it bigger
     return (i + 1) + '. The element with data-sid="' + pin.sid + '" (it currently says "' + pin.label + '"): ' + pin.text.trim();
@@ -28,12 +42,12 @@ function buildShipPrompt(pins) {
     '',
     lines.join('\n'),
     '',
-    'Edit index.html with edit_file, and put any style changes in custom.css. Keep every data-sid attribute.',
+    pageBlock(page),
   ].join('\n');
 }
 
-// failed: QA checks that didn't pass, [{ label, detail }]
-function buildFixPrompt(failed) {
+// failed: QA checks that didn't pass, [{ label, detail }]   page: the page as it is now
+function buildFixPrompt(failed, page) {
   const lines = failed.map(function (check) {
     return '- ' + check.label + ': ' + check.detail;
   });
@@ -42,25 +56,14 @@ function buildFixPrompt(failed) {
     '',
     lines.join('\n'),
     '',
-    'Fix each problem with the smallest sensible change (for a link that goes nowhere, point it at the most fitting section of the page that exists). Keep every data-sid attribute.',
+    'Fix each problem with the smallest sensible change (for a link that goes nowhere, point it at the most fitting section of the page that exists).',
+    '',
+    pageBlock(page),
   ].join('\n');
-}
-
-// The AI's reply → one plain-English line per change.
-function parseSummary(text) {
-  const lines = String(text || '').split('\n')
-    .map(function (line) { return line.trim(); })
-    // Keep only the lines the AI started with "- ".
-    .filter(function (line) { return line.startsWith('- '); })
-    .map(function (line) { return line.slice(2).trim(); })
-    .filter(Boolean);
-  if (lines.length > 0) return lines;
-  return text && text.trim() ? [text.trim()] : [];
 }
 
 module.exports = {
   SHIP_SYSTEM: SHIP_SYSTEM,
   buildShipPrompt: buildShipPrompt,
   buildFixPrompt: buildFixPrompt,
-  parseSummary: parseSummary,
 };

@@ -66,17 +66,15 @@ function create(options, client) {
   }
 
   async function extractJson(request) {
+    const content = [];
+    // The photo is optional: Ship sends text only.
+    if (request.imageBase64) content.push({ type: 'image_url', image_url: { url: 'data:' + request.mimeType + ';base64,' + request.imageBase64 } });
+    content.push({ type: 'text', text: request.prompt });
     const completion = await client.chat.completions.create({
       model: model,
       messages: [
         { role: 'system', content: request.system },
-        {
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: 'data:' + request.mimeType + ';base64,' + request.imageBase64 } },
-            { type: 'text', text: request.prompt },
-          ],
-        },
+        { role: 'user', content: content },
       ],
       // strict: OpenAI must return JSON that matches our schema exactly.
       response_format: { type: 'json_schema', json_schema: { name: 'result', schema: request.schema, strict: true } },

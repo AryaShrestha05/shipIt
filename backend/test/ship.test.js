@@ -12,16 +12,27 @@ const PINS = [{ sid: 'hero-title', label: 'Old', text: 'make it bigger' }];
 
 function newRun() {
   const runId = workspace.createRun();
-  workspace.writeVersion(runId, 1, { 'index.html': '<h1 data-sid="hero-title">Old</h1>' });
+  workspace.writeVersion(runId, 1, {
+    'index.html': '<h1 data-sid="hero-title">Old</h1>',
+    'theme.css': ':root { --accent: red; }',
+    'custom.css': '/* Changes made with ShipIt go here. */\n',
+  });
   return runId;
 }
 
-// A fake AI agent: edits the new version's page through the real tool runner.
-function fakeAgent(calls) {
-  return async function (model, prompt, runTool) {
-    calls.push(prompt);
-    runTool({ name: 'edit_file', args: { file_path: 'index.html', old_text: 'Old', new_text: 'New ' + calls.length } });
-    return calls.length === 1 ? '- Made the title bigger' : '- Linked the order button to the menu';
+// A fake AI: one call per round, each answering with an edit plan.
+// The first call edits the title; each fix call edits it again.
+function fakeAi(calls) {
+  return {
+    extractJson: async function (request) {
+      calls.push(request.prompt);
+      const n = calls.length;
+      return {
+        changes: [n === 1 ? 'Made the title bigger' : 'Linked the order button to the menu'],
+        edits: [{ find: n === 1 ? '>Old<' : '>New ' + (n - 1) + '<', replace: '>New ' + n + '<' }],
+        css: n === 1 ? '[data-sid="hero-title"] { font-size: 120px; }' : '',
+      };
+    },
   };
 }
 
@@ -50,10 +61,9 @@ async function run(runId, failures, agentCalls) {
   const shipped = await ship.shipRun({
     runId: runId,
     pins: PINS,
-    model: {},
+    ai: fakeAi(agentCalls),
     baseUrl: 'http://localhost:1',
     onEvent: function (e) { events.push(e); },
-    agent: fakeAgent(agentCalls),
     qa: fakeQa(failures),
   });
   return { events: events, shipped: shipped };
@@ -78,9 +88,12 @@ test('ship applies the notes in v2, catches a QA failure, fixes it and passes', 
 
   // v1 is never touched; v2 has both edits.
   assert.strictEqual(fs.readFileSync(path.join(workspace.versionDir(runId, 1), 'index.html'), 'utf8'), '<h1 data-sid="hero-title">Old</h1>');
-  assert.match(fs.readFileSync(path.join(workspace.versionDir(runId, 2), 'index.html'), 'utf8'), /New 1/);
+  assert.match(fs.readFileSync(path.join(workspace.versionDir(runId, 2), 'index.html'), 'utf8'), /New 2/);
+  assert.match(fs.readFileSync(path.join(workspace.versionDir(runId, 2), 'custom.css'), 'utf8'), /font-size: 120px/);
   assert.match(calls[0], /make it bigger/);
+  assert.match(calls[0], /data-sid="hero-title">Old</, 'the AI sees the page');
   assert.match(calls[1], /#order/);
+  assert.match(calls[1], />New 1</, 'the fix sees the page after the first edits');
 });
 
 test('ship gives up fixing after 2 rounds and still reports what failed', async () => {
@@ -98,4 +111,20 @@ test('a second ship on the same run makes v3 from v2', async () => {
   const second = await run(runId, 0, []);
   assert.strictEqual(second.shipped.version, 3);
   assert.strictEqual(second.shipped.beforeUrl, workspace.previewUrl(runId, 2));
+});
+
+test('edits the AI got wrong are skipped and reported, not applied', async () => {
+  const runId = newRun();
+  const events = [];
+  await ship.shipRun({
+    runId: runId,
+    pins: PINS,
+    ai: { extractJson: async function () { return { changes: ['x'], edits: [{ find: 'not on the page', replace: 'y' }], css: '' }; } },
+    baseUrl: 'http://localhost:1',
+    onEvent: function (e) { events.push(e); },
+    qa: fakeQa(0),
+  });
+  const warning = events.find(function (e) { return e.type === 'warning'; });
+  assert.match(warning.message, /1 edit/);
+  assert.strictEqual(fs.readFileSync(path.join(workspace.versionDir(runId, 2), 'index.html'), 'utf8'), '<h1 data-sid="hero-title">Old</h1>');
 });

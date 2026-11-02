@@ -4,9 +4,7 @@ const path = require('path');
 const fromRequest = require('../ai/fromRequest');
 const workspace = require('../workspace/workspace');
 const recorder = require('../runs/recorder');
-const tools = require('../agent/tools');
 const ship = require('../ship/ship');
-const prompts = require('../ship/prompts');
 const sse = require('./sse');
 
 // POST /api/ship — apply all the owner's notes, test, fix, report.
@@ -61,8 +59,8 @@ function createShipRouter(deps) {
       await shipRun({
         runId: runId,
         pins: pins.map(function (pin) { return { sid: pin.sid, label: String(pin.label || ''), text: pin.text }; }),
-        // The AI, given its rules and the list of tools it may use.
-        model: ai.chatModel({ system: prompts.SHIP_SYSTEM, tools: tools.toolDeclarations }),
+        // The AI. Ship asks it for one edit plan per round (see ship/edits.js).
+        ai: ai,
         // QA opens the site on this same server, at the port it's listening on.
         baseUrl: 'http://localhost:' + req.socket.localPort,
         onEvent: send,

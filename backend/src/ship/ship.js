@@ -1,23 +1,25 @@
 const fs = require('fs');
 const path = require('path');
 const workspace = require('../workspace/workspace');
-const tools = require('../agent/tools');
-const loop = require('../agent/loop');
 const qaRunner = require('../qa/runQa');
 const prompts = require('./prompts');
+const edits = require('./edits');
 
 // Ship: apply every note at once, test the site like a customer, fix what
 // failed, and report back.
 //
-//   v1 (before) ──copy──► v2 ──AI edits──► test ──fail?──► AI fixes ──► test ...
+//   v1 (before) ──copy──► v2 ──1 AI call: edit plan──► test ──fail?──► 1 AI call: fix plan ──► test ...
+//
+// Each round is ONE AI call: we send the whole page, the AI answers with an
+// edit plan (edits.js), and our code applies it. At most 3 calls per Ship.
 //
 // options:
 //   runId, pins     — which site, and the owner's notes
-//   model           — the AI's chat model (from ai.chatModel)
+//   ai              — the AI (from ai/providers.js); we use ai.extractJson
 //   baseUrl         — where this server is, e.g. http://localhost:3001 (QA opens the site there)
 //   onEvent(event)  — live updates for the browser
-//   signal          — stops the AI if the browser tab closes
-//   agent, qa       — only swapped out in tests
+//   signal          — stops before the next round if the browser tab closes
+//   qa              — only swapped out in tests
 
 const MAX_FIX_ROUNDS = 2;
 
@@ -49,7 +51,6 @@ function sidsIn(html) {
 async function shipRun(options) {
   const runId = options.runId;
   const onEvent = options.onEvent || function () {};
-  const agent = options.agent || loop.runAgent;
   const qa = options.qa || qaRunner.runQa;
 
   const from = workspace.latestVersion(runId);
@@ -57,15 +58,26 @@ async function shipRun(options) {
   // Start from a copy, so the old version is never touched.
   workspace.copyVersion(runId, from, to);
   const expectedSids = sidsIn(fs.readFileSync(path.join(workspace.versionDir(runId, from), 'index.html'), 'utf8'));
-  // The AI's tools can only touch files inside the new version's folder.
-  const runTool = tools.createToolRunner(workspace.versionDir(runId, to));
+  const dir = workspace.versionDir(runId, to); // every edit happens in the new copy only
 
-  // The AI's tool steps, as short readable lines (not whole file contents).
-  function onAgentEvent(event) {
-    if (event.type === 'tool_call') {
-      onEvent({ type: 'step', tool: event.name, file: event.args ? event.args.file_path || '' : '' });
+  // The page as it is right now, for the AI to read.
+  function currentPage() {
+    const themePath = path.join(dir, 'theme.css');
+    return {
+      html: fs.readFileSync(path.join(dir, 'index.html'), 'utf8'),
+      themeCss: fs.existsSync(themePath) ? fs.readFileSync(themePath, 'utf8') : '',
+    };
+  }
+
+  // One AI call → one edit plan → applied. Returns the plan's change lines.
+  async function round(prompt) {
+    const plan = await options.ai.extractJson({ system: prompts.SHIP_SYSTEM, prompt: prompt, schema: edits.PLAN_SCHEMA });
+    const result = edits.applyEdits(dir, plan, expectedSids);
+    onEvent({ type: 'step', message: 'made ' + result.applied + ' edit' + (result.applied === 1 ? '' : 's') + (result.cssAdded ? ' and a style change' : '') });
+    if (result.skipped.length > 0) {
+      onEvent({ type: 'warning', message: 'skipped ' + result.skipped.length + ' edit' + (result.skipped.length === 1 ? '' : 's') + ' that didn\'t fit the page' });
     }
-    if (event.type === 'error') onEvent({ type: 'warning', message: event.message });
+    return plan.changes || [];
   }
 
   async function test(version) {
@@ -81,31 +93,29 @@ async function shipRun(options) {
 
   // 2. Make every change.
   onEvent({ type: 'status', message: 'applying your ' + options.pins.length + ' change' + (options.pins.length === 1 ? '' : 's') });
-  // Run the AI with all the notes; its final reply becomes the list of changes.
-  const changes = prompts.parseSummary(await agent(options.model, prompts.buildShipPrompt(options.pins), runTool, onAgentEvent, { signal: options.signal }));
+  const changes = (await round(prompts.buildShipPrompt(options.pins, currentPage()))).slice();
 
   // 3. Test like a customer; fix and retest up to MAX_FIX_ROUNDS times.
   onEvent({ type: 'status', message: 'testing your site like a customer' });
   let result = await test(to);
-  let round = 0;
+  let fixRound = 0;
   // Report the checks, then stop if all passed or we've used up the fix rounds.
   while (true) {
-    result.checks.forEach(function (check) { onEvent({ type: 'qa_check', round: round, check: check }); });
+    result.checks.forEach(function (check) { onEvent({ type: 'qa_check', round: fixRound, check: check }); });
     // Only the checks that failed (! means "not").
     const failed = result.checks.filter(function (check) { return !check.ok; });
-    if (failed.length === 0 || round >= MAX_FIX_ROUNDS) break;
+    if (failed.length === 0 || fixRound >= MAX_FIX_ROUNDS) break;
     if (options.signal && options.signal.aborted) break;
 
-    round++;
+    fixRound++;
     onEvent({
       type: 'qa_fix',
-      round: round,
+      round: fixRound,
       message: 'found: ' + failed.map(function (c) { return c.label; }).join(', ') + ' — fixing it',
       failed: failed.map(function (c) { return c.id; }),
     });
     // Ask the AI to fix exactly what failed, then test again.
-    const fixText = await agent(options.model, prompts.buildFixPrompt(failed), runTool, onAgentEvent, { signal: options.signal });
-    prompts.parseSummary(fixText).forEach(function (line) { changes.push(line); });
+    (await round(prompts.buildFixPrompt(failed, currentPage()))).forEach(function (line) { changes.push(line); });
     result = await test(to);
   }
 

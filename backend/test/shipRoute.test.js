@@ -30,7 +30,7 @@ function post(server, body) {
 const PINS = [{ sid: 'hero-title', label: 'Old', text: 'bigger' }];
 
 function deps(shipRun) {
-  return { aiFromRequest: function () { return { chatModel: function () { return {}; } }; }, shipRun: shipRun };
+  return { aiFromRequest: function () { return { extractJson: function () { return Promise.resolve({}); } }; }, shipRun: shipRun };
 }
 
 test('POST /api/ship refuses no notes, empty notes and unknown runs', async () => {

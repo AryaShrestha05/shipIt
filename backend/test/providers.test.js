@@ -228,3 +228,28 @@ test('claude: defaults to haiku 5.5, the cheapest model', async () => {
   assert.strictEqual(client.sent[0].model, 'claude-haiku-5-5');
   assert.strictEqual(client.sent[0].fallbacks, undefined);
 });
+
+// Ship sends text only (the page), so a photo must be optional everywhere.
+const TEXT_ONLY = { system: 's', prompt: 'edit this page', schema: { type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: false } };
+
+test('claude: extractJson without a photo sends text only', async () => {
+  const client = fakeClaude([{ stop_reason: 'end_turn', content: [{ type: 'text', text: '{"ok":true}' }] }]);
+  const out = await providers.createAI({ provider: 'claude', apiKey: 'k' }, client).extractJson(TEXT_ONLY);
+  assert.deepStrictEqual(out, { ok: true });
+  const parts = client.sent[0].messages[0].content;
+  assert.deepStrictEqual(parts.map(function (p) { return p.type; }), ['text']);
+});
+
+test('openai: extractJson without a photo sends text only', async () => {
+  const client = fakeOpenAI([{ choices: [{ message: { content: '{"ok":true}' } }] }]);
+  await providers.createAI({ provider: 'openai', apiKey: 'k' }, client).extractJson(TEXT_ONLY);
+  const parts = client.sent[0].messages[1].content;
+  assert.deepStrictEqual(parts.map(function (p) { return p.type; }), ['text']);
+});
+
+test('gemini: extractJson without a photo sends text only', async () => {
+  const client = fakeGemini('{"ok":true}');
+  await providers.createAI({ provider: 'gemini', apiKey: 'k' }, client).extractJson(TEXT_ONLY);
+  const parts = client.calls[0];
+  assert.ok(parts.every(function (p) { return !p.inlineData; }));
+});

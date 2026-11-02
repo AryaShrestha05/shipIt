@@ -92,18 +92,16 @@ function create(options, client) {
   }
 
   async function extractJson(request) {
+    const content = [];
+    // The photo is optional: Ship sends text only.
+    if (request.imageBase64) content.push({ type: 'image', source: { type: 'base64', media_type: request.mimeType, data: request.imageBase64 } });
+    content.push({ type: 'text', text: request.prompt });
     const response = await send({
       system: request.system,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: request.mimeType, data: request.imageBase64 } },
-          { type: 'text', text: request.prompt },
-        ],
-      }],
+      messages: [{ role: 'user', content: content }],
       output_config: { format: { type: 'json_schema', schema: request.schema } },
     });
-    if (response.stop_reason === 'refusal') throw new Error('The AI declined to read this photo.');
+    if (response.stop_reason === 'refusal') throw new Error('The AI declined this request.');
     return JSON.parse(textOf(response));
   }
 
