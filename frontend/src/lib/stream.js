@@ -12,7 +12,17 @@ export async function postStream(url, body, onEvent, signal) {
   const headers = await aiHeaders();
   headers['Content-Type'] = 'application/json';
   const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), signal: signal });
+  await readStream(res, onEvent);
+}
 
+// The same, for a GET stream that needs no AI key (like /api/replay/latest).
+export async function getStream(url, onEvent, signal) {
+  const res = await fetch(url, { signal: signal });
+  await readStream(res, onEvent);
+}
+
+// Reads a streaming response, calling onEvent for each event as it arrives.
+async function readStream(res, onEvent) {
   if (!res.ok) {
     let message = 'Request failed (' + res.status + ')';
     try {

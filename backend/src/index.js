@@ -9,6 +9,7 @@ const aiRoutes = require('./routes/ai');
 const build = require('./routes/build');
 const transcribe = require('./routes/transcribe');
 const shipRoutes = require('./routes/ship');
+const replayRoutes = require('./routes/replay');
 const workspace = require('./workspace/workspace');
 
 // app is the server. Each app.use(...) below adds a step that runs on every request.
@@ -29,6 +30,7 @@ app.use('/api', aiRoutes.createAiRouter());
 app.use('/api', build.createBuildRouter());
 app.use('/api', transcribe.createTranscribeRouter());
 app.use('/api', shipRoutes.createShipRouter());
+app.use('/api', replayRoutes.createReplayRouter()); // stage backup: play a recorded run
 
 // The port from .env, or 3001 if it isn't set (|| means "or, if empty").
 const PORT = process.env.PORT || 3001;

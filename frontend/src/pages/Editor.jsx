@@ -50,7 +50,9 @@ export default function Editor() {
   // The picked look. ?theme=ripple (from the landing page) picks it in advance.
   const location = useLocation(); // the current address, e.g. /try?theme=ripple
   const [theme, setTheme] = useState(themeFromSearch(location.search));
-  const step = setupStep({ keyHint: keyHint, theme: theme });
+  // /try?replay=latest plays a recorded run instead (the stage backup): no key or look needed.
+  const replayId = new URLSearchParams(location.search).get('replay') || '';
+  const step = replayId ? 'photo' : setupStep({ keyHint: keyHint, theme: theme });
   const themeName = theme ? THEMES.find(function (t) { return t.id === theme; }).name : '';
 
   // The picker is attached once per page load, so it reads the latest pins
@@ -91,6 +93,20 @@ export default function Editor() {
     win.addEventListener('resize', redraw);
     return function () { win.removeEventListener('resize', redraw); };
   }, [siteDoc, state.pins]);
+
+  // Replay mode: play the recording through the same screens as a live run.
+  useEffect(function () {
+    if (!replayId) return undefined;
+    const controller = new AbortController();
+    stopRef.current = controller;
+    dispatch({ type: 'BUILD_START' });
+    api.replay(replayId, function (event) {
+      dispatch({ type: 'SSE_EVENT', event: event });
+    }, controller.signal).catch(function () {
+      // Stopped by "start over" or by leaving the page: nothing to do.
+    });
+    return function () { controller.abort(); };
+  }, [replayId]);
 
   async function startBuild(choice) {
     dispatch({ type: 'BUILD_START' });

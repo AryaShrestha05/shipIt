@@ -106,6 +106,30 @@ describe('editorReducer', function () {
     expect(state.pins.length).toBe(1);
   });
 
+  test('a replayed ship shows its notes and plays like a live ship', function () {
+    const state = run([
+      { type: 'BUILD_START' },
+      event({ type: 'run', runId: 'ab12cd34' }),
+      event({ type: 'built', previewUrl: '/preview/ab12cd34/v1/index.html', layout: {} }),
+      event({ type: 'replay_ship', pins: [{ sid: 'hero-title', label: 'Rosie', text: 'make it bigger' }] }),
+      event({ type: 'status', message: 'applying your 1 change' }),
+    ]);
+    expect(state.stage).toBe('shipping');
+    expect(state.pins.map(function (p) { return p.text; })).toEqual(['make it bigger']);
+    expect(state.shipLog).toEqual(['applying your 1 change']);
+  });
+
+  test('the next replayed ship starts from the finished one', function () {
+    const state = run(READY.concat([
+      { type: 'SHIP_START' },
+      SHIPPED,
+      event({ type: 'replay_ship', pins: [{ sid: 'cta-order', label: 'Order', text: 'make it green' }] }),
+    ]));
+    expect(state.stage).toBe('shipping');
+    expect(state.result).toBe(null);
+    expect(state.pins.length).toBe(1);
+  });
+
   test('RESET starts over from the photo screen', function () {
     const state = run([{ type: 'BUILD_START' }, event({ type: 'built', previewUrl: '/x' }), { type: 'RESET' }]);
     expect(state).toEqual(initialState);

@@ -93,6 +93,8 @@ export default function Dev() {
 
       <PhotoBuild />
 
+      <Replays />
+
       <h2>Feature 3 — sections</h2>
       <p>
         Business:{' '}
@@ -240,6 +242,37 @@ function PhotoBuild() {
           <iframe title="built site" src={built.previewUrl} style={{ width: '100%', height: 600, border: '1px solid #000' }} />
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// Feature 12: the stage backup. Every recorded run, with a link that plays it
+// back in the real editor (no AI key, no internet needed).
+function Replays() {
+  const [runs, setRuns] = useState(null);
+
+  useEffect(function () {
+    fetch('/api/replay')
+      .then(function (res) { return res.json(); })
+      .then(setRuns)
+      .catch(function () { setRuns([]); });
+  }, []);
+
+  return (
+    <div>
+      <h2>Feature 12 — replay a recorded run</h2>
+      <p><a href="/try?replay=latest">▶ replay the latest run</a></p>
+      {runs === null ? <p>loading...</p> : null}
+      {runs && runs.length === 0 ? <p>No recordings yet. Build a site on /try first.</p> : null}
+      <ol>
+        {(runs || []).map(function (run) {
+          return (
+            <li key={run.runId}>
+              <a href={'/try?replay=' + run.runId}>{run.name}</a> — {run.ships.length} ship{run.ships.length === 1 ? '' : 's'}, {new Date(run.when).toLocaleString()}
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

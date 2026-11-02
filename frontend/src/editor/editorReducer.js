@@ -57,8 +57,18 @@ function onShipEvent(state, event) {
   return state;
 }
 
+// A replay (backend/src/routes/replay.js) starts each recorded ship with its
+// notes. They become pins, and the ship plays out like a live one.
+function onReplayShip(state, event) {
+  const pins = event.pins.map(function (note) {
+    return { id: nextPinId++, sid: note.sid, rect: null, label: note.label, text: note.text, status: 'draft' };
+  });
+  return change(state, { stage: 'shipping', pins: pins, error: null, shipLog: [], checks: [], fixRound: 0, result: null });
+}
+
 // One live event from the server (see backend/src/routes/build.js).
 function onServerEvent(state, event) {
+  if (event.type === 'replay_ship') return onReplayShip(state, event);
   if (state.stage === 'shipping') return onShipEvent(state, event);
   if (event.type === 'run') return change(state, { runId: event.runId });
   if (event.type === 'status') return change(state, { statusLines: state.statusLines.concat([event.message]) });

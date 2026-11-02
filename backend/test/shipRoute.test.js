@@ -76,3 +76,22 @@ test('POST /api/ship refuses a second ship while one is running (409)', async ()
     server.close();
   }
 });
+
+test('a ship recording starts with the notes, so a replay can show them', async () => {
+  const recorder = require('../src/runs/recorder');
+  const runId = workspace.createRun();
+  workspace.writeVersion(runId, 1, { 'index.html': '<h1 data-sid="hero-title">Old</h1>' });
+  const quickShip = function (options) {
+    options.onEvent({ type: 'shipped', version: 2 });
+    return Promise.resolve({ type: 'shipped', version: 2 });
+  };
+  const server = await startServer(shipRoutes.createShipRouter(deps(quickShip)));
+  try {
+    await (await post(server, { runId: runId, pins: PINS })).text();
+  } finally {
+    server.close();
+  }
+  const entries = recorder.loadRecording(runId, 'ship-2');
+  assert.strictEqual(entries[0].event.type, 'pins');
+  assert.deepStrictEqual(entries[0].event.pins, [{ sid: 'hero-title', label: 'Old', text: 'bigger' }]);
+});

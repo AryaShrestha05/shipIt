@@ -53,12 +53,15 @@ function createShipRouter(deps) {
       rec.record(event);
       stream.send(event);
     }
+    const notes = pins.map(function (pin) { return { sid: pin.sid, label: String(pin.label || ''), text: pin.text }; });
+    // Recorded (not sent): a replay starts each ship by showing these notes.
+    rec.record({ type: 'pins', pins: notes });
 
     try {
       // Does all the work (see ship/ship.js). await waits until it's finished.
       await shipRun({
         runId: runId,
-        pins: pins.map(function (pin) { return { sid: pin.sid, label: String(pin.label || ''), text: pin.text }; }),
+        pins: notes,
         // The AI. Ship asks it for one edit plan per round (see ship/edits.js).
         ai: ai,
         // QA opens the site on this same server, at the port it's listening on.

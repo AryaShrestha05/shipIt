@@ -1,4 +1,4 @@
-import { postStream } from '../lib/stream';
+import { getStream, postStream } from '../lib/stream';
 import { aiHeaders } from '../lib/aiSettings';
 
 // Every call the editor makes to the backend, in one place.
@@ -20,6 +20,12 @@ export function ship(request, onEvent, signal) {
     runId: request.runId,
     pins: request.pins.map(function (pin) { return { sid: pin.sid, label: pin.label, text: pin.text }; }),
   }, onEvent, signal);
+}
+
+// Plays a recorded run back (runId, or 'latest'). No AI key, no internet
+// beyond this computer: the stage backup.
+export function replay(runId, onEvent, signal) {
+  return getStream('/api/replay/' + encodeURIComponent(runId), onEvent, signal);
 }
 
 // A voice clip in, text out. Throws with a readable message if it fails.
