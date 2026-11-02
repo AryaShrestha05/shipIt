@@ -12,10 +12,31 @@ import { createKeyVault } from './keyVault';
 
 const STORAGE_KEY = 'shipit.ai';
 
+// models: what the key panel's Model dropdown offers, cheapest first.
+// The first one is the default (the backend uses the same default).
 export const PROVIDERS = [
-  { id: 'gemini', name: 'Gemini', defaultModel: 'gemini-2.5-flash', voice: true },
-  { id: 'openai', name: 'OpenAI', defaultModel: 'gpt-5-mini', voice: true },
-  { id: 'claude', name: 'Claude', defaultModel: 'claude-haiku-5-5', voice: false },
+  {
+    id: 'gemini', name: 'Gemini', defaultModel: 'gemini-2.5-flash', voice: true,
+    models: [
+      { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash · fast, cheap' },
+      { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro · strongest' },
+    ],
+  },
+  {
+    id: 'openai', name: 'OpenAI', defaultModel: 'gpt-5-mini', voice: true,
+    models: [
+      { id: 'gpt-5-mini', label: 'GPT-5 mini · fast, cheap' },
+      { id: 'gpt-5.5', label: 'GPT-5.5 · strongest' },
+    ],
+  },
+  {
+    id: 'claude', name: 'Claude', defaultModel: 'claude-haiku-5-5', voice: false,
+    models: [
+      { id: 'claude-haiku-5-5', label: 'Haiku 5.5 · fastest, under 1¢ a Ship' },
+      { id: 'claude-sonnet-5-5', label: 'Sonnet 5.5 · better edits' },
+      { id: 'claude-opus-5-5', label: 'Opus 5.5 · strongest, priciest' },
+    ],
+  },
 ];
 
 // Made on first use, so pages that never touch the key never open IndexedDB.

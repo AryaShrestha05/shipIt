@@ -100,8 +100,15 @@ export default function KeyPanel(props) {
       </label>
 
       <label className="kp-field">
-        <span>Model <em>optional</em></span>
-        <input value={model} placeholder={info.defaultModel} onChange={function (e) { setModel(e.target.value); }} />
+        <span>Model</span>
+        {/* '' means the provider's default (the first one in the list). */}
+        <select value={model || info.defaultModel} onChange={function (e) { setModel(e.target.value === info.defaultModel ? '' : e.target.value); }}>
+          {info.models.map(function (m) {
+            return <option key={m.id} value={m.id}>{m.label}</option>;
+          })}
+          {/* A model saved before this list existed stays selectable. */}
+          {model && !info.models.some(function (m) { return m.id === model; }) ? <option value={model}>{model}</option> : null}
+        </select>
       </label>
 
       {info.voice || BROWSER_VOICE ? null : <p className="kp-note">{info.name} can't hear voice notes, so you'll type them instead.</p>}
