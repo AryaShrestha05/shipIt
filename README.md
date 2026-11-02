@@ -39,7 +39,7 @@ You need **Node.js** installed (`node -v` should print a version).
 cd backend
 npm install
 npx playwright install chromium   # one time: the hidden browser QA uses
-cp .env.example .env              # then put the Gemini key in .env (ask Arya)
+cp .env.example .env              # optional: a server Gemini key, used only as a backup
 npm run dev                       # runs on http://localhost:3001
 
 # 2. Frontend (the "dining room") — terminal window 2
@@ -50,13 +50,17 @@ npm run dev                       # open http://localhost:5173
 
 | Page | What it's for |
 |---|---|
-| **/try** (also `/`) | The real app: photo → site → click and speak notes → Ship |
-| **/blocks** | Gallery of every section and theme (free and pro) |
-| **/dev** | Plain test page with one box per feature, and the AI key settings |
+| **/** | Landing page: the pitch, how it works, and the looks to pick from |
+| **/try** | The real app: ① your AI key → ② pick a look → ③ photo → site → click and speak notes → Ship |
+| **/try?replay=latest** | Stage backup: plays the last recorded run, no AI or internet needed |
+| **/blocks** | Gallery of every section and theme (free and pro), plus Theme Studio |
+| **/dev** | Plain test page with one box per feature, sample businesses, and the list of replays |
 
 Tests: `cd backend && npm test` and `cd frontend && npm test`. Everything should pass.
 
-**Secrets:** `backend/.env` holds the real key and is never committed (`.gitignore` blocks it). `backend/.env.example` shows what goes in it. Users can also paste their own Gemini, OpenAI or Claude key on `/dev`; it stays in their browser.
+**Keys:** every user brings their own Gemini, OpenAI or Claude key (step 1 on `/try`). It's encrypted in their browser (AES-256, with a lock that can't be copied out) and only a hint like `sk-…cdef` is stored in plain text. The server uses it for one request and never saves it. `backend/.env` can hold a backup Gemini key; it's never committed (`.gitignore` blocks it).
+
+**Cost:** Claude defaults to Haiku 5.5. One Ship is at most 3 AI calls of about 4,000 tokens each, so under 1¢; $5 of credit covers hundreds of runs. Type `claude-sonnet-5-5` in the key panel's Model box for stronger edits.
 
 ---
 
@@ -73,20 +77,47 @@ shipIt/
 │   │   ├── site/            snapping sections together into a website
 │   │   ├── workspace/       each site's versions: v1, v2, … (old ones never change)
 │   │   ├── agent/           the AI's work loop and the tools it may use (read, edit, write files)
-│   │   ├── ship/            Ship: apply notes → test → fix → summary
+│   │   ├── ship/            Ship: apply notes → test → fix → summary (edits.js applies the AI's edit plan safely)
 │   │   ├── qa/              testing a site like a customer in a hidden browser
-│   │   └── runs/            recording every run so it can be replayed on stage
+│   │   └── runs/            recording every run, and replaying it on stage (replay.js)
 │   ├── templates/           the design itself: page shell, 15 sections, 3 themes, animations
 │   ├── test/                automatic checks (they use a fake AI, so they're free)
 │   └── .env.example         which secrets the server needs
 ├── frontend/                what you see in the browser (React + Vite)
 │   └── src/
 │       ├── App.jsx          which page shows for which address
-│       ├── pages/           the pages: Editor (/try), Blocks, Dev
-│       ├── editor/          the editor's pieces: photo drop, picker, notes, voice, state
-│       └── lib/             small shared helpers: AI key settings, live-stream reader
+│       ├── pages/           the pages: Landing (/), Editor (/try), Blocks, ThemeStudio, Dev
+│       ├── blocks/          the theme gallery's data, previews and Theme Studio
+│       ├── editor/          the editor's pieces: key panel, look picker, photo drop, picker, notes, voice, Ship screen, state
+│       └── lib/             small shared helpers: AI key settings, encrypted key vault, live-stream reader
 └── docs/superpowers/        the design spec and the step-by-step build plan
 ```
+
+---
+
+## How to read the code
+
+Open the project in VS Code (`code .` from the `shipIt` folder), then read the files in the order a request travels:
+
+| # | File | What you'll learn |
+|---|---|---|
+| 1 | `backend/src/index.js` | Every address the server answers |
+| 2 | `frontend/src/App.jsx` | Which page shows at which address |
+| 3 | `frontend/src/pages/Editor.jsx` | The screen the owner uses |
+| 4 | `frontend/src/editor/editorReducer.js` | The editor's memory: photo → building → editing → shipping → done |
+| 5 | `backend/src/routes/build.js` | What happens when a photo arrives |
+| 6 | `backend/src/vision/extract.js` | The AI reads the menu |
+| 7 | `backend/src/site/compose.js` | The site gets snapped together from sections |
+| 8 | `frontend/src/editor/picker.js` | Clicking parts of the site to drop pins |
+| 9 | `backend/src/ship/ship.js` + `edits.js` | Ship: one AI call for an edit plan → apply it safely → test → fix → summary |
+| 10 | `backend/src/qa/runQa.js` | The "customer" test in a hidden browser |
+
+Tips:
+- **Cmd+click** a function name to jump to where it's defined; **Ctrl+-** jumps back.
+- **Cmd+P** opens a file by name; **Cmd+Shift+F** searches every file (try `data-sid`).
+- Read the comments first: every important line has a plain-English one.
+- Skip `node_modules/` and `test/` on the first pass.
+- Run both servers and use `/try` while you read. The backend terminal shows which step is running.
 
 ---
 
@@ -109,15 +140,15 @@ shipIt/
 /try in the browser                                   backend
 ──────────────────                                    ───────
 1. drop a photo        ── POST /api/build ──►  vision/extract.js reads it
-                                               site/compose.js builds it  → v1
+   (+ the look picked)                         site/compose.js builds it in that look  → v1
 2. click parts, talk   ── POST /api/transcribe ► ai/ turns speech into text
    (notes = "pins")
 3. press Ship          ── POST /api/ship ───►  ship/ship.js
                                                  copy v1 → v2
-                                                 AI edits v2 (agent/)
+                                                 1 AI call: an edit plan (JSON), applied by edits.js
                                                  QA tests v2 (qa/)
-                                                 failed? AI fixes, QA again (max 2×)
-4. see what changed    ◄── live updates ─────  summary + before/after screenshots
+                                                 failed? 1 AI call to fix, QA again (max 2×)
+4. see what changed    ◄── live updates ─────  checklist, before/after slider, summary card
 ```
 
 Every step streams back live ("Server-Sent Events", like a sports ticker), and every run is recorded (`runs/recorder.js`) so we can replay it if the Wi-Fi dies on stage.
@@ -125,7 +156,7 @@ Every step streams back live ("Server-Sent Events", like a sports ticker), and e
 ### Words you'll hear
 
 - **Prompt**: the instruction we give the AI.
-- **Agent**: an AI that doesn't just answer, it *does things* using tools, step by step.
+- **Edit plan**: Ship's one-shot answer from the AI: every change as "find this exact text, replace it with that", plus CSS. Our code applies it and refuses any edit that would break the page.
 - **Endpoint / route**: an address on the server the frontend can call, like `/api/ship`.
 - **SSE (Server-Sent Events)**: the server keeps sending updates over one open connection.
 - **Section / block**: one hand-made piece of a website (a hero, a menu, a "visit us" box).
@@ -142,19 +173,19 @@ Every step streams back live ("Server-Sent Events", like a sports ticker), and e
 |---|---|---|
 | 1 | Agent can't crash: errors become messages, step limit, stop button, safe folders | ✅ done |
 | 2 | Automatic retry when the AI is busy | ✅ done |
-| 3 | 15 hand-made sections + 3 themes, and the `/blocks` gallery | ✅ done |
+| 3 | 15 hand-made sections + 10 themes (3 ours, 7 from the gallery), and the `/blocks` gallery | ✅ done |
 | 4 | A fresh copy of the site for every change (v1, v2, …) | ✅ done |
-| 4b | Bring your own AI key (Gemini, OpenAI or Claude) | ✅ done |
-| 5 | Photo → site, streamed live and recorded | ✅ done |
-| 6 | Editor screen at `/try` | ✅ done |
+| 4b | Bring your own AI key (Gemini, OpenAI or Claude), encrypted on the user's device | ✅ done |
+| 5 | Photo → site in the look the user picked, streamed live and recorded | ✅ done |
+| 6 | Editor at `/try`: key → look → photo, all required | ✅ done |
 | 7 | Click parts of the site to drop numbered pins | ✅ done |
-| 8 | Hold the mic and speak a note | ✅ done |
+| 8 | Hold the mic and speak a note (browser speech, live words, works with any key) | ✅ done |
 | 9 | Customer-style testing (links, errors, phone size, images, name tags) | ✅ done |
-| 10 | Ship: apply all pins, test, fix | 🟡 built and tested with a fake AI; waiting on a real AI test |
-| 11 | Ship screen: live checklist, before/after slider, summary card | ⏳ next |
-| 12 | Offline replay of a real run (backup if Wi-Fi dies) | |
-| 13 | qtzx-style landing page | |
-| 14 | Desktop app (Electron), optional | |
+| 10 | Ship: apply all pins in 1 AI call, test, fix (max 3 calls) | 🟡 tested end to end with a stand-in AI; first real Claude run next |
+| 11 | Ship screen: live checklist, before/after slider, summary card | ✅ done |
+| 12 | Offline replay of a recorded run (`/try?replay=latest`) | ✅ done |
+| 13 | Landing page at `/` | ✅ done |
+| 14 | Desktop app (Electron) | ⏭️ skipped, judges don't score it |
 
 ## How a teammate can help without writing JavaScript
 
