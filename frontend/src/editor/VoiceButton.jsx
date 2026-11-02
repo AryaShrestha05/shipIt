@@ -1,23 +1,43 @@
 import { useRef, useState } from 'react';
 import { createVoiceRecorder } from './voiceRecorder';
+import { createSpeechListener } from './speechListener';
 import * as api from './api';
 
 const TOO_SHORT_MS = 300; // a quick tap isn't a voice note
 
 // Hold to talk. Let go, and what you said is typed into the note.
 // props.onText(text) — the words heard
+// props.onLive(text) — the words so far, while still talking ('' when done)
 // props.onFail()     — anything went wrong; the note falls back to typing
+//
+// Two ways to listen, best first:
+//   1. the browser's own speech engine (speechListener.js): free, live, works with any AI key
+//   2. record a clip and ask the AI to write it down (needs a Gemini or OpenAI key)
 export default function VoiceButton(props) {
   const [state, setState] = useState('idle'); // idle | recording | busy
   const recorderRef = useRef(null);
+  const listenerRef = useRef(null);
   const startedAtRef = useRef(0);
 
-  // Mic button pressed down: start recording.
+  function live(text) {
+    if (props.onLive) props.onLive(text);
+  }
+
+  // Mic button pressed down: start listening.
   async function begin(e) {
     e.preventDefault();
     if (state !== 'idle') return;
-    recorderRef.current = createVoiceRecorder();
     startedAtRef.current = Date.now();
+
+    const listener = createSpeechListener();
+    if (listener.available) {
+      listenerRef.current = listener;
+      setState('recording');
+      listener.start({ onLive: live });
+      return;
+    }
+
+    recorderRef.current = createVoiceRecorder();
     setState('recording');
     try {
       await recorderRef.current.start();
@@ -28,8 +48,21 @@ export default function VoiceButton(props) {
     }
   }
 
-  // Button let go (or the pointer slid off it): stop and turn the recording into text.
+  // Button let go (or the pointer slid off it): stop and use what was heard.
   async function end() {
+    const listener = listenerRef.current;
+    if (listener) {
+      listenerRef.current = null;
+      setState('busy');
+      const heard = await listener.stop();
+      live('');
+      setState('idle');
+      if (Date.now() - startedAtRef.current < TOO_SHORT_MS) return;
+      if (heard) props.onText(heard);
+      else props.onFail();
+      return;
+    }
+
     const recorder = recorderRef.current;
     if (!recorder) return;
     recorderRef.current = null;

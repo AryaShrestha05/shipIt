@@ -43,6 +43,7 @@ export default function PinList(props) {
 function PinText(props) {
   const ref = useRef(null);
   const [heardNothing, setHeardNothing] = useState(false);
+  const [liveWords, setLiveWords] = useState(''); // what the mic is hearing right now
 
   // Put the cursor in this box when it's the new (or re-clicked) pin.
   useEffect(function () {
@@ -73,8 +74,9 @@ function PinText(props) {
           placeholder="Hold the mic and talk, or type: e.g. make this bigger"
           onChange={function (e) { props.onChange(props.pin.id, e.target.value); }}
         />
-        <VoiceButton onText={addSpoken} onFail={voiceFailed} />
+        <VoiceButton onText={addSpoken} onLive={setLiveWords} onFail={voiceFailed} />
       </div>
+      {liveWords ? <p className="ed-pin-live">“{liveWords}”</p> : null}
       {heardNothing ? <p className="ed-pin-hint">Couldn't hear that — type it instead.</p> : null}
     </div>
   );

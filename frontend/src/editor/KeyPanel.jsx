@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { PROVIDERS, aiHeaders, loadAiSettings, providerInfo, removeApiKey, saveAiSettings, saveApiKey } from '../lib/aiSettings';
+import { createSpeechListener } from './speechListener';
 import './KeyPanel.css';
+
+// Chrome, Edge and Safari can turn speech into text themselves, so voice
+// works with every provider there, Claude included.
+const BROWSER_VOICE = createSpeechListener().available;
 
 // "Your AI key": pick a provider, paste a key, save it encrypted on this
 // device. The key is never shown again in full, only as "sk-…cdef".
@@ -52,7 +57,7 @@ export default function KeyPanel(props) {
       const res = await fetch('/api/ai/check', { method: 'POST', headers: await aiHeaders() });
       const body = await res.json();
       if (body.ok) {
-        setStatus('Works: ' + body.provider + ' / ' + body.model + (body.canTranscribe ? '' : ' (no voice, type your notes)'));
+        setStatus('Works: ' + body.provider + ' / ' + body.model + (body.canTranscribe || BROWSER_VOICE ? '' : ' (no voice, type your notes)'));
       } else {
         setStatus('That key did not work: ' + body.error);
       }
@@ -94,7 +99,7 @@ export default function KeyPanel(props) {
         <input value={model} placeholder={info.defaultModel} onChange={function (e) { setModel(e.target.value); }} />
       </label>
 
-      {info.voice ? null : <p className="kp-note">{info.name} can't hear voice notes, so you'll type them instead.</p>}
+      {info.voice || BROWSER_VOICE ? null : <p className="kp-note">{info.name} can't hear voice notes, so you'll type them instead.</p>}
 
       <div className="kp-actions">
         <button className="kp-primary" onClick={save} disabled={busy}>Save</button>
