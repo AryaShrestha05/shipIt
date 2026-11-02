@@ -298,3 +298,89 @@
 .ed-look { margin: -16px 0 20px; color: var(--e-soft); font-size: 14px; }
 .ed-look strong { color: var(--e-text); font-weight: 600; }
 .ed-photo .kp { width: 100%; }
+
+/* ---------- Ship: live progress ---------- */
+.sp { display: flex; flex-direction: column; gap: 18px; }
+.sp-now { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 18px; font-weight: 500; }
+.sp-pulse { width: 9px; height: 9px; border-radius: 50%; background: #ffcf9f; box-shadow: 0 0 0 0 rgba(255, 207, 159, 0.6); animation: sp-pulse 1.4s var(--e-ease) infinite; }
+@keyframes sp-pulse { to { box-shadow: 0 0 0 12px rgba(255, 207, 159, 0); } }
+.sp-tests { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.sp-test { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: var(--e-soft); transition: color 0.4s; }
+.sp-mark {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  box-shadow: inset 0 0 0 1px var(--e-line);
+  transition: background 0.4s var(--e-ease), transform 0.4s var(--e-ease);
+}
+.sp-test.is-waiting .sp-mark { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15); }
+.sp-test.is-pass { color: var(--e-text); }
+.sp-test.is-pass .sp-mark { background: #2f6f4f; color: #e6fff1; transform: scale(1.05); }
+.sp-test.is-fail { color: var(--e-text); }
+.sp-test.is-fail .sp-mark { background: #8a3a2c; color: #ffe9e3; }
+.sp-detail { display: block; margin-top: 3px; font-style: normal; font-size: 12px; color: #ffb59f; }
+.sp-log { margin: 0; padding: 14px 0 0 18px; border-top: 1px solid var(--e-line); color: var(--e-soft); font-size: 12px; line-height: 1.7; }
+
+/* ---------- Ship: before / after slider ---------- */
+.ba {
+  position: relative;
+  width: 100%;
+  max-height: calc(100dvh - 104px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--e-line);
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  align-self: flex-start;
+}
+.ba-img { display: block; width: 100%; height: auto; }
+.ba-before { position: absolute; inset: 0; }
+.ba-tag {
+  position: absolute;
+  top: 14px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(11, 11, 12, 0.72);
+  color: var(--e-text);
+  backdrop-filter: blur(8px);
+}
+.ba-tag-before { left: 14px; }
+.ba-tag-after { right: 14px; }
+.ba-handle { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--e-text); }
+/* The range input is only for keyboard users (Tab, then arrow keys); the mouse drags the whole picture. */
+.ba-handle input { position: absolute; inset: 0 -20px; width: 40px; opacity: 0; pointer-events: none; }
+.ba-handle input:focus-visible + .ba-knob { outline: 2px solid var(--e-text); outline-offset: 3px; }
+.ba-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--e-text);
+  color: var(--e-bg);
+  font-size: 16px;
+  pointer-events: none;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Ship: summary card ---------- */
+.sr { display: flex; flex-direction: column; gap: 12px; }
+.sr-title { margin: 0 0 6px; font-family: 'Yeseva One', Georgia, serif; font-weight: 400; font-size: 30px; line-height: 1.05; }
+.sr-head { margin: 8px 0 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--e-soft); }
+.sr-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; }
+.sr-tests { list-style: none; padding-left: 0; }
+.sr-tests .is-pass span { color: #7fd6a6; }
+.sr-tests .is-fail span { color: #ff9b85; }
+.sr-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }

@@ -50,6 +50,62 @@ describe('editorReducer', function () {
     expect(state.pins).toEqual([]);
   });
 
+  // A site that is built and has one written note, ready to ship.
+  const READY = [
+    { type: 'BUILD_START' },
+    event({ type: 'run', runId: 'ab12cd34' }),
+    event({ type: 'built', previewUrl: '/preview/ab12cd34/v1/index.html', layout: {} }),
+    { type: 'ADD_PIN', sid: 'hero-title', rect: {}, label: 'Rosie' },
+  ];
+
+  const SHIPPED = event({
+    type: 'shipped',
+    version: 2,
+    previewUrl: '/preview/ab12cd34/v2/index.html',
+    beforeUrl: '/preview/ab12cd34/v1/index.html',
+    shots: { before: '/b.png', after: '/a.png', phone: '/p.png' },
+    summary: { changes: ['Made the title bigger'], tests: [{ id: 'links', label: 'links', ok: true }] },
+  });
+
+  test('shipping collects live lines and keeps only the latest result per check', function () {
+    const state = run(READY.concat([
+      { type: 'SHIP_START' },
+      event({ type: 'status', message: 'applying your 1 change' }),
+      event({ type: 'step', message: 'made 1 edit' }),
+      event({ type: 'qa_check', round: 0, check: { id: 'links', label: 'links', ok: false, detail: '#order' } }),
+      event({ type: 'qa_fix', round: 1, message: 'found: links — fixing it' }),
+      event({ type: 'qa_check', round: 1, check: { id: 'links', label: 'links', ok: true, detail: '' } }),
+    ]));
+    expect(state.stage).toBe('shipping');
+    expect(state.shipLog).toEqual(['applying your 1 change', 'made 1 edit', 'found: links — fixing it']);
+    expect(state.checks).toEqual([{ id: 'links', label: 'links', ok: true, detail: '' }]);
+    expect(state.fixRound).toBe(1);
+  });
+
+  test('a shipped event shows the result and moves the editor to the new version', function () {
+    const state = run(READY.concat([{ type: 'SHIP_START' }, SHIPPED]));
+    expect(state.stage).toBe('done');
+    expect(state.version).toBe(2);
+    expect(state.previewUrl).toBe('/preview/ab12cd34/v2/index.html');
+    expect(state.result.summary.changes).toEqual(['Made the title bigger']);
+  });
+
+  test('continuing after a ship clears the notes and the last ship', function () {
+    const state = run(READY.concat([{ type: 'SHIP_START' }, SHIPPED, { type: 'CONTINUE_EDITING' }]));
+    expect(state.stage).toBe('editing');
+    expect(state.pins).toEqual([]);
+    expect(state.result).toBe(null);
+    expect(state.shipLog).toEqual([]);
+    expect(state.version).toBe(2);
+  });
+
+  test('an error while shipping goes back to editing and keeps the notes', function () {
+    const state = run(READY.concat([{ type: 'SHIP_START' }, event({ type: 'error', message: 'AI busy' })]));
+    expect(state.stage).toBe('editing');
+    expect(state.error).toBe('AI busy');
+    expect(state.pins.length).toBe(1);
+  });
+
   test('RESET starts over from the photo screen', function () {
     const state = run([{ type: 'BUILD_START' }, event({ type: 'built', previewUrl: '/x' }), { type: 'RESET' }]);
     expect(state).toEqual(initialState);

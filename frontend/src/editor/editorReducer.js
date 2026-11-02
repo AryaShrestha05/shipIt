@@ -15,8 +15,10 @@ export const initialState = {
   business: null,
   statusLines: [],
   pins: [],
-  qa: [],
-  result: null,
+  shipLog: [], // live lines while shipping: "applying your 2 changes", "made 3 edits", ...
+  checks: [], // the latest result of each customer test, e.g. { id: 'links', ok: true, ... }
+  fixRound: 0, // how many times Ship has gone back to fix something
+  result: null, // the 'shipped' event: summary, before/after screenshots
   error: null,
   replay: null,
 };
@@ -28,8 +30,36 @@ function change(state, fields) {
   return Object.assign({}, state, fields);
 }
 
+// A check's latest result replaces its older one (a fix round re-runs every check).
+function withCheck(checks, check) {
+  const others = checks.filter(function (old) { return old.id !== check.id; });
+  const at = checks.findIndex(function (old) { return old.id === check.id; });
+  if (at === -1) return checks.concat([check]);
+  others.splice(at, 0, check); // keep it in the same place in the list
+  return others;
+}
+
+// Live events from POST /api/ship (see backend/src/ship/ship.js).
+function onShipEvent(state, event) {
+  if (event.type === 'status' || event.type === 'step' || event.type === 'warning' || event.type === 'qa_fix') {
+    const fields = { shipLog: state.shipLog.concat([event.message]) };
+    if (event.type === 'qa_fix') fields.fixRound = event.round;
+    return change(state, fields);
+  }
+  if (event.type === 'qa_check') return change(state, { checks: withCheck(state.checks, event.check) });
+  if (event.type === 'shipped') {
+    return change(state, { stage: 'done', result: event, version: event.version, previewUrl: event.previewUrl });
+  }
+  if (event.type === 'error') {
+    // Nothing was lost: go back to the notes so the owner can try again.
+    return change(state, { stage: 'editing', error: event.message });
+  }
+  return state;
+}
+
 // One live event from the server (see backend/src/routes/build.js).
 function onServerEvent(state, event) {
+  if (state.stage === 'shipping') return onShipEvent(state, event);
   if (event.type === 'run') return change(state, { runId: event.runId });
   if (event.type === 'status') return change(state, { statusLines: state.statusLines.concat([event.message]) });
   if (event.type === 'extracted') return change(state, { business: event.business });
@@ -72,10 +102,10 @@ export function editorReducer(state, action) {
     return change(state, { pins: state.pins.filter(function (pin) { return pin.id !== action.id; }) });
   }
   if (action.type === 'SHIP_START') {
-    return change(state, { stage: 'shipping', error: null });
+    return change(state, { stage: 'shipping', error: null, shipLog: [], checks: [], fixRound: 0, result: null });
   }
   if (action.type === 'CONTINUE_EDITING') {
-    return change(state, { stage: 'editing', pins: [], result: null });
+    return change(state, { stage: 'editing', pins: [], result: null, shipLog: [], checks: [], fixRound: 0 });
   }
   if (action.type === 'RESET') {
     return initialState;

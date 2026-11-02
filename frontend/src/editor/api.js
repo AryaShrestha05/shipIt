@@ -13,6 +13,15 @@ export function build(request, onEvent, signal) {
   }, onEvent, signal);
 }
 
+// Every note at once → the site edited, tested and fixed. onEvent gets each
+// live step: status, step, qa_check, qa_fix, then shipped (see editorReducer.js).
+export function ship(request, onEvent, signal) {
+  return postStream('/api/ship', {
+    runId: request.runId,
+    pins: request.pins.map(function (pin) { return { sid: pin.sid, label: pin.label, text: pin.text }; }),
+  }, onEvent, signal);
+}
+
 // A voice clip in, text out. Throws with a readable message if it fails.
 export async function transcribe(clip) {
   const headers = await aiHeaders();

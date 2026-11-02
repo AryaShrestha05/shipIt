@@ -9,6 +9,9 @@ import BuildStatus from '../editor/BuildStatus';
 import SitePreview from '../editor/SitePreview';
 import PinList from '../editor/PinList';
 import { attachPicker, drawPins } from '../editor/picker';
+import ShipProgress from '../editor/ShipProgress';
+import ShipResult from '../editor/ShipResult';
+import BeforeAfter from '../editor/BeforeAfter';
 import KeyPanel from '../editor/KeyPanel';
 import ThemePicker from '../editor/ThemePicker';
 import { setupStep, themeFromSearch } from '../editor/setupStep';
@@ -23,6 +26,8 @@ import './Editor.css';
 //                3 photo → PhotoDrop
 //   building → BuildStatus
 //   editing  → the site + the side rail with your notes (pins)
+//   shipping → the site + live progress and customer tests
+//   done     → before/after slider + "what I changed and tested"
 
 const fade = {
   initial: { opacity: 0, y: 24, filter: 'blur(8px)' },
@@ -103,6 +108,19 @@ export default function Editor() {
     }
   }
 
+  async function startShip() {
+    dispatch({ type: 'SHIP_START' });
+    const controller = new AbortController();
+    stopRef.current = controller;
+    try {
+      await api.ship({ runId: state.runId, pins: state.pins }, function (event) {
+        dispatch({ type: 'SSE_EVENT', event: event });
+      }, controller.signal);
+    } catch (err) {
+      if (err.name !== 'AbortError') dispatch({ type: 'SSE_EVENT', event: { type: 'error', message: err.message } });
+    }
+  }
+
   function startOver() {
     if (stopRef.current) stopRef.current.abort();
     setSiteDoc(null);
@@ -171,36 +189,63 @@ export default function Editor() {
           </Motion.main>
         ) : null}
 
-        {state.stage === 'editing' ? (
-          <Motion.main key="editing" className="ed-workspace" {...fade}>
+        {/* editing, shipping and done share one workspace, so the site doesn't reload between them */}
+        {state.stage === 'editing' || state.stage === 'shipping' || state.stage === 'done' ? (
+          <Motion.main key="workspace" className="ed-workspace" {...fade}>
             <section className="ed-stage">
-              <SitePreview
-                src={state.previewUrl}
-                width={width}
-                label={name.toLowerCase().replace(/[^a-z0-9]+/g, '') + '.com · v' + state.version}
-                onLoad={setSiteDoc}
-              />
-            </section>
-            <aside className="ed-rail">
-              <div className="ed-rail-block">
-                <p className="ed-kicker">view</p>
-                <div className="ed-toggle">
-                  <button className={width === 'desktop' ? 'is-active' : ''} onClick={function () { setWidth('desktop'); }}>Desktop</button>
-                  <button className={width === 'phone' ? 'is-active' : ''} onClick={function () { setWidth('phone'); }}>Phone</button>
-                </div>
-              </div>
-              <div className="ed-rail-block ed-rail-grow">
-                <p className="ed-kicker">your notes{state.pins.length ? ' · ' + state.pins.length : ''}</p>
-                <PinList
-                  pins={state.pins}
-                  focusId={focusId}
-                  onChange={function (id, text) { dispatch({ type: 'UPDATE_PIN', id: id, text: text }); }}
-                  onRemove={function (id) { dispatch({ type: 'REMOVE_PIN', id: id }); }}
+              {state.stage === 'done' ? (
+                <BeforeAfter before={state.result.shots.before} after={state.result.shots.after} />
+              ) : (
+                <SitePreview
+                  src={state.previewUrl}
+                  width={width}
+                  label={name.toLowerCase().replace(/[^a-z0-9]+/g, '') + '.com · v' + state.version}
+                  onLoad={setSiteDoc}
                 />
-              </div>
-              <button className="ed-btn ed-btn-primary ed-ship" disabled={!canShip(state)}>
-                Ship <span className="ed-btn-icon">↗</span>
-              </button>
+              )}
+            </section>
+
+            <aside className="ed-rail">
+              {state.stage === 'editing' ? (
+                <>
+                  <div className="ed-rail-block">
+                    <p className="ed-kicker">view</p>
+                    <div className="ed-toggle">
+                      <button className={width === 'desktop' ? 'is-active' : ''} onClick={function () { setWidth('desktop'); }}>Desktop</button>
+                      <button className={width === 'phone' ? 'is-active' : ''} onClick={function () { setWidth('phone'); }}>Phone</button>
+                    </div>
+                  </div>
+                  <div className="ed-rail-block ed-rail-grow">
+                    <p className="ed-kicker">your notes{state.pins.length ? ' · ' + state.pins.length : ''}</p>
+                    <PinList
+                      pins={state.pins}
+                      focusId={focusId}
+                      onChange={function (id, text) { dispatch({ type: 'UPDATE_PIN', id: id, text: text }); }}
+                      onRemove={function (id) { dispatch({ type: 'REMOVE_PIN', id: id }); }}
+                    />
+                  </div>
+                  {state.error ? <p className="ed-error">{state.error}</p> : null}
+                  <button className="ed-btn ed-btn-primary ed-ship" disabled={!canShip(state)} onClick={startShip}>
+                    Ship {state.pins.length > 1 ? state.pins.length + ' changes' : ''} <span className="ed-btn-icon">↗</span>
+                  </button>
+                </>
+              ) : null}
+
+              {state.stage === 'shipping' ? (
+                <div className="ed-rail-block ed-rail-grow">
+                  <ShipProgress log={state.shipLog} checks={state.checks} fixRound={state.fixRound} />
+                </div>
+              ) : null}
+
+              {state.stage === 'done' ? (
+                <div className="ed-rail-block ed-rail-grow">
+                  <ShipResult
+                    result={state.result}
+                    onContinue={function () { setSiteDoc(null); dispatch({ type: 'CONTINUE_EDITING' }); }}
+                    onViewSite={function () { window.open(state.previewUrl, '_blank', 'noopener'); }}
+                  />
+                </div>
+              ) : null}
             </aside>
           </Motion.main>
         ) : null}

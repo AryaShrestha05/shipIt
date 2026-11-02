@@ -27,6 +27,11 @@ export default function KeyPanel(props) {
   }
 
   async function save() {
+    // Nothing typed and nothing saved yet: there's no key to save.
+    if (!draft.trim() && !saved.keyHint) {
+      setStatus('Paste your key first.');
+      return;
+    }
     setBusy(true);
     try {
       saveAiSettings({ provider: provider, model: model });
