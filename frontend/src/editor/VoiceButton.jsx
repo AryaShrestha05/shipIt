@@ -31,9 +31,15 @@ export default function VoiceButton(props) {
 
     const listener = createSpeechListener();
     if (listener.available) {
+      try {
+        listener.start({ onLive: live });
+      } catch {
+        // The browser wouldn't start listening: fall back to typing.
+        props.onFail();
+        return;
+      }
       listenerRef.current = listener;
       setState('recording');
-      listener.start({ onLive: live });
       return;
     }
 

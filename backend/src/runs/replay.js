@@ -15,11 +15,23 @@ const workspace = require('../workspace/workspace');
 // than this, so a slow AI moment doesn't leave the stage silent.
 const MAX_GAP_MS = 1800;
 
-// Every recorded run, newest first: [{ runId, name, ships: [2, 3], when }]
+// Did this recorded build finish with a site? (A wrong key or a bad photo
+// records a build that ends in an error, and that's nothing to show on stage.)
+function builtOk(runId) {
+  const file = path.join(recorder.RECORDINGS_DIR, runId, 'build.json');
+  if (!fs.existsSync(file)) return false;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8')).some(function (entry) { return entry.event.type === 'built'; });
+  } catch {
+    return false; // a half-written file
+  }
+}
+
+// Every recorded run that built a site, newest first: [{ runId, name, ships: [2, 3], when }]
 function listRecordings() {
   if (!fs.existsSync(recorder.RECORDINGS_DIR)) return [];
   return fs.readdirSync(recorder.RECORDINGS_DIR)
-    .filter(function (runId) { return fs.existsSync(path.join(recorder.RECORDINGS_DIR, runId, 'build.json')); })
+    .filter(builtOk)
     .map(function (runId) {
       const dir = path.join(recorder.RECORDINGS_DIR, runId);
       let name = runId;
@@ -33,6 +45,15 @@ function listRecordings() {
       return { runId: runId, name: name, ships: ships, when: fs.statSync(path.join(dir, 'build.json')).mtimeMs };
     })
     .sort(function (a, b) { return b.when - a.when; });
+}
+
+// What "latest" plays: the newest run with at least one ship (the full demo),
+// or the newest run at all if none has shipped yet. null if there are none.
+function latestRun(list) {
+  const shipped = list.find(function (run) { return run.ships.length > 0; });
+  if (shipped) return shipped;
+  if (list.length > 0) return list[0];
+  return null;
 }
 
 // Puts the saved versions and screenshots back into workspaces/, so the
@@ -60,6 +81,7 @@ function playbackGaps(entries, speed) {
 module.exports = {
   MAX_GAP_MS: MAX_GAP_MS,
   listRecordings: listRecordings,
+  latestRun: latestRun,
   restoreRun: restoreRun,
   playbackGaps: playbackGaps,
 };

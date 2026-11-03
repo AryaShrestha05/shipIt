@@ -48,7 +48,22 @@ function sidsIn(html) {
   return sids;
 }
 
+// If anything fails (the AI is out of credit, the tab closed, ...), the new
+// copy is deleted. Otherwise a half-edited version would sit there unseen,
+// and the next ship would quietly build on top of it.
 async function shipRun(options) {
+  const from = workspace.latestVersion(options.runId);
+  try {
+    return await applyAndTest(options);
+  } catch (err) {
+    const half = workspace.versionDir(options.runId, from + 1);
+    if (fs.existsSync(half)) fs.rmSync(half, { recursive: true, force: true });
+    throw err;
+  }
+}
+
+// The real work: copy, edit, test, fix, report.
+async function applyAndTest(options) {
   const runId = options.runId;
   const onEvent = options.onEvent || function () {};
   const qa = options.qa || qaRunner.runQa;

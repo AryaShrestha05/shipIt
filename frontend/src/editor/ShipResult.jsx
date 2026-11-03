@@ -4,12 +4,12 @@
 export default function ShipResult(props) {
   const summary = props.result.summary;
   const passed = summary.tests.filter(function (t) { return t.ok; }).length;
-  const allPassed = passed === summary.tests.length;
+  const failed = summary.tests.length - passed;
 
   return (
     <div className="sr">
       <p className="ed-kicker">shipped · v{props.result.version}</p>
-      <h2 className="sr-title">{allPassed ? 'Done. Everything works.' : 'Done, with one thing to check.'}</h2>
+      <h2 className="sr-title">{failed === 0 ? 'Done. Everything works.' : 'Done, with ' + (failed === 1 ? 'one thing' : failed + ' things') + ' to check.'}</h2>
 
       <p className="sr-head">What I changed</p>
       <ul className="sr-list">

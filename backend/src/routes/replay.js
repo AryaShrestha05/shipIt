@@ -4,7 +4,8 @@ const replay = require('../runs/replay');
 const sse = require('./sse');
 
 // GET /api/replay           — every recorded run, newest first
-// GET /api/replay/:runId    — plays one back as a live stream (runId can be "latest")
+// GET /api/replay/:runId    — plays one back as a live stream (runId can be "latest":
+//                             the newest run that has a ship)
 //
 // The stream is the build's events, then for each ship:
 //   { type: 'replay_ship', pins }  — the notes, so the editor can show them
@@ -31,7 +32,7 @@ function createReplayRouter() {
   router.get('/replay/:runId', async function (req, res) {
     let runId = req.params.runId;
     const all = replay.listRecordings();
-    if (runId === 'latest' && all.length > 0) runId = all[0].runId;
+    if (runId === 'latest' && replay.latestRun(all)) runId = replay.latestRun(all).runId;
     const run = all.find(function (r) { return r.runId === runId; });
     if (!run) return res.status(404).json({ error: 'No recording for ' + runId });
 

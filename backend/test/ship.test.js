@@ -128,3 +128,18 @@ test('edits the AI got wrong are skipped and reported, not applied', async () =>
   assert.match(warning.message, /1 edit/);
   assert.strictEqual(fs.readFileSync(path.join(workspace.versionDir(runId, 2), 'index.html'), 'utf8'), '<h1 data-sid="hero-title">Old</h1>');
 });
+
+test('a ship that fails halfway leaves no half-edited version behind', async () => {
+  const runId = newRun();
+  let calls = 0;
+  // The first round works; the fix round's AI call fails (e.g. out of credit).
+  const flakyAi = {
+    extractJson: async function () {
+      calls++;
+      if (calls === 1) return { changes: ['Made the title bigger'], edits: [{ find: '>Old<', replace: '>New<' }], css: '' };
+      throw new Error('credit balance is too low');
+    },
+  };
+  await assert.rejects(ship.shipRun({ runId: runId, pins: PINS, ai: flakyAi, baseUrl: 'http://x', qa: fakeQa(5) }), /credit/);
+  assert.strictEqual(workspace.latestVersion(runId), 1, 'v2 was removed, so the next ship starts from what the owner sees');
+});

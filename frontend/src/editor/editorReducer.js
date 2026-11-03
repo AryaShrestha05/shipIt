@@ -114,6 +114,12 @@ export function editorReducer(state, action) {
   if (action.type === 'SHIP_START') {
     return change(state, { stage: 'shipping', error: null, shipLog: [], checks: [], fixRound: 0, result: null });
   }
+  // The ship stream closed. If it never said 'shipped' or 'error' (the
+  // connection dropped), go back to the notes instead of spinning forever.
+  if (action.type === 'SHIP_ENDED') {
+    if (state.stage !== 'shipping') return state;
+    return change(state, { stage: 'editing', error: 'Ship stopped before it finished. Nothing changed, so try again.' });
+  }
   if (action.type === 'CONTINUE_EDITING') {
     return change(state, { stage: 'editing', pins: [], result: null, shipLog: [], checks: [], fixRound: 0 });
   }

@@ -156,3 +156,16 @@ describe('canShip', function () {
     expect(canShip(state)).toBe(false);
   });
 });
+
+describe('a ship that stops without finishing', function () {
+  test('goes back to the notes with a message instead of spinning forever', function () {
+    const state = run([{ type: 'SHIP_START' }, { type: 'SHIP_ENDED' }]);
+    expect(state.stage).toBe('editing');
+    expect(state.error).toMatch(/stopped/i);
+  });
+
+  test('after a finished ship, the end of the stream changes nothing', function () {
+    const done = run([{ type: 'SHIP_START' }, event({ type: 'shipped', version: 2, previewUrl: '/p/v2', summary: { changes: [], tests: [] } })]);
+    expect(editorReducer(done, { type: 'SHIP_ENDED' })).toBe(done);
+  });
+});

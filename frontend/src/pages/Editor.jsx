@@ -132,6 +132,7 @@ export default function Editor() {
       await api.ship({ runId: state.runId, pins: state.pins }, function (event) {
         dispatch({ type: 'SSE_EVENT', event: event });
       }, controller.signal);
+      dispatch({ type: 'SHIP_ENDED' }); // only does something if it never finished
     } catch (err) {
       if (err.name !== 'AbortError') dispatch({ type: 'SSE_EVENT', event: { type: 'error', message: err.message } });
     }

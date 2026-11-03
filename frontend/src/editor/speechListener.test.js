@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { createSpeechListener } from './speechListener';
 
 // A pretend browser speech engine. Tests call say() to make it "hear" words.
@@ -51,5 +51,29 @@ describe('createSpeechListener', function () {
     engine.made[0].onerror({ error: 'not-allowed' });
     expect(await listener.stop()).toBe('');
     expect(listener.lastError()).toBe('not-allowed');
+  });
+
+  test('stop still finishes if the engine never says it ended', async function () {
+    vi.useFakeTimers();
+    class SilentRecognition {
+      start() {}
+      stop() {} // never calls onend
+    }
+    const listener = createSpeechListener({ Recognition: SilentRecognition });
+    listener.start({ onLive: function () {} });
+    const stopped = listener.stop();
+    vi.advanceTimersByTime(2000);
+    await expect(stopped).resolves.toBe('');
+    vi.useRealTimers();
+  });
+
+  test('an engine that refuses to start fails cleanly and can be used again', async function () {
+    class BrokenRecognition {
+      start() { throw new Error('InvalidStateError'); }
+      stop() {}
+    }
+    const listener = createSpeechListener({ Recognition: BrokenRecognition });
+    expect(function () { listener.start({ onLive: function () {} }); }).toThrow();
+    await expect(listener.stop()).resolves.toBe('');
   });
 });

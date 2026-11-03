@@ -8,6 +8,9 @@
 //   }
 //
 // deps.Recognition is only swapped out in tests.
+// The longest we wait for the engine to finish after letting go of the mic.
+const STOP_TIMEOUT_MS = 1500;
+
 export function createSpeechListener(deps) {
   if (!deps) deps = {};
   // Chrome still calls it webkitSpeechRecognition.
@@ -44,7 +47,13 @@ export function createSpeechListener(deps) {
       ended = true;
       if (onEnd) onEnd();
     };
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      // e.g. the engine is busy: mark it finished so stop() can't hang.
+      ended = true;
+      throw err;
+    }
   }
 
   // Stops listening and gives back what was heard.
@@ -53,6 +62,8 @@ export function createSpeechListener(deps) {
       if (!recognition || ended) return resolve(heard);
       onEnd = function () { resolve(heard); };
       recognition.stop(); // the engine calls onend once it has finished the last words
+      // Some engines never call onend; don't leave the mic stuck on "busy".
+      setTimeout(function () { resolve(heard); }, STOP_TIMEOUT_MS);
     });
   }
 

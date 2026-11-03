@@ -84,3 +84,24 @@ test('an unknown or "latest" run id is handled', async () => {
     server.close();
   }
 });
+
+test('a build that failed (no site) is never offered for replay', () => {
+  const dir = path.join(recorder.RECORDINGS_DIR, 'cccc3333');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'build.json'), JSON.stringify([
+    { t: 0, event: { type: 'run', runId: 'cccc3333' } },
+    { t: 10, event: { type: 'error', message: 'invalid x-api-key' } },
+  ]));
+  assert.ok(!replay.listRecordings().some(function (r) { return r.runId === 'cccc3333'; }));
+});
+
+test('"latest" means the newest run that has a ship, not just the newest build', () => {
+  const list = [
+    { runId: 'new1', ships: [] },
+    { runId: 'mid2', ships: [2] },
+    { runId: 'old3', ships: [2, 3] },
+  ];
+  assert.strictEqual(replay.latestRun(list).runId, 'mid2');
+  assert.strictEqual(replay.latestRun([{ runId: 'only', ships: [] }]).runId, 'only');
+  assert.strictEqual(replay.latestRun([]), null);
+});
