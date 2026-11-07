@@ -11,7 +11,6 @@ import PinList from '../editor/PinList';
 import { attachPicker, drawPins } from '../editor/picker';
 import ShipProgress from '../editor/ShipProgress';
 import ShipResult from '../editor/ShipResult';
-import BeforeAfter from '../editor/BeforeAfter';
 import KeyPanel from '../editor/KeyPanel';
 import ThemePicker from '../editor/ThemePicker';
 import { setupStep, themeFromSearch } from '../editor/setupStep';
@@ -27,7 +26,7 @@ import './Editor.css';
 //   building → BuildStatus
 //   editing  → the site + the side rail with your notes (pins)
 //   shipping → the site + live progress and customer tests
-//   done     → before/after slider + "what I changed and tested"
+//   done     → the changed site + "what I changed and tested"
 
 const fade = {
   initial: { opacity: 0, y: 24, filter: 'blur(8px)' },
@@ -210,16 +209,14 @@ export default function Editor() {
         {state.stage === 'editing' || state.stage === 'shipping' || state.stage === 'done' ? (
           <Motion.main key="workspace" className="ed-workspace" {...fade}>
             <section className="ed-stage">
-              {state.stage === 'done' ? (
-                <BeforeAfter before={state.result.shots.before} after={state.result.shots.after} />
-              ) : (
-                <SitePreview
-                  src={state.previewUrl}
-                  width={width}
-                  label={name.toLowerCase().replace(/[^a-z0-9]+/g, '') + '.com · v' + state.version}
-                  onLoad={setSiteDoc}
-                />
-              )}
+              {/* After Ship, previewUrl is the new version, so the owner sees the changed site straight away. */}
+              <SitePreview
+                src={state.previewUrl}
+                width={width}
+                label={name.toLowerCase().replace(/[^a-z0-9]+/g, '') + '.com · v' + state.version}
+                onLoad={setSiteDoc}
+              />
+
             </section>
 
             <aside className="ed-rail">

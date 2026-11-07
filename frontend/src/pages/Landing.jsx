@@ -17,7 +17,7 @@ const rise = {
 const STEPS = [
   { n: '01', title: 'Snap a photo', text: 'Your menu, your sign, your price list. ShipIt reads it and builds your site in about a minute.' },
   { n: '02', title: 'Click and say it', text: 'Click anything on your site and say what to change. Every note becomes a numbered pin.' },
-  { n: '03', title: 'Ship once', text: 'One press makes every change, tests your site like a customer would, fixes what broke, and shows you before and after.' },
+  { n: '03', title: 'Ship once', text: 'One press makes every change, tests your site like a customer would, fixes what broke, and shows you the finished site.' },
 ];
 
 export default function Landing() {

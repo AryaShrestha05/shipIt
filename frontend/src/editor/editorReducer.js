@@ -18,7 +18,7 @@ export const initialState = {
   shipLog: [], // live lines while shipping: "applying your 2 changes", "made 3 edits", ...
   checks: [], // the latest result of each customer test, e.g. { id: 'links', ok: true, ... }
   fixRound: 0, // how many times Ship has gone back to fix something
-  result: null, // the 'shipped' event: summary, before/after screenshots
+  result: null, // the 'shipped' event: the new version and the summary
   error: null,
   replay: null,
 };

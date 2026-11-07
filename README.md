@@ -2,7 +2,7 @@
 
 **Point at your website. Say what to change. Press Ship once.**
 
-ShipIt is our entry for the **Marist Innovation Challenge (Software track)**. A small business owner, like a bakery, drops in a photo of their menu, and ShipIt builds them a premium-looking website. They then click on anything on the site, *say* what they want changed, and press **Ship** once. ShipIt makes all the changes, tests the site like a customer would, fixes anything broken, and shows a before/after with a plain-English summary.
+ShipIt is our entry for the **Marist Innovation Challenge (Software track)**. A small business owner, like a bakery, drops in a photo of their menu, and ShipIt builds them a premium-looking website. They then click on anything on the site, *say* what they want changed, and press **Ship** once. ShipIt makes all the changes, tests the site like a customer would, fixes anything broken, and shows the finished site with a plain-English summary.
 
 | Date | What |
 |---|---|
@@ -26,7 +26,7 @@ The demo, screen by screen:
 2. **Live build.** The site appears in about a minute, using one of our premium templates.
 3. **Click & speak.** Click the title, hold the mic: *"make this bigger"*. Each note becomes a numbered pin.
 4. **Ship once.** All the pins are applied together. Then ShipIt clicks every button like a customer, checks phone size, finds a broken link, fixes it, and retests.
-5. **Before / after.** A drag slider plus a "here's what I changed and tested" card.
+5. **The finished site.** The changed site, plus a "here's what I changed and tested" card.
 
 ---
 
@@ -148,7 +148,7 @@ Tips:
                                                  1 AI call: an edit plan (JSON), applied by edits.js
                                                  QA tests v2 (qa/)
                                                  failed? 1 AI call to fix, QA again (max 2×)
-4. see what changed    ◄── live updates ─────  checklist, before/after slider, summary card
+4. see what changed    ◄── live updates ─────  checklist, the changed site, summary card
 ```
 
 Every step streams back live ("Server-Sent Events", like a sports ticker), and every run is recorded (`runs/recorder.js`) so we can replay it if the Wi-Fi dies on stage.
@@ -182,7 +182,7 @@ Every step streams back live ("Server-Sent Events", like a sports ticker), and e
 | 8 | Hold the mic and speak a note (browser speech, live words, works with any key) | ✅ done |
 | 9 | Customer-style testing (links, errors, phone size, images, name tags) | ✅ done |
 | 10 | Ship: apply all pins in 1 AI call, test, fix (max 3 calls) | 🟡 tested end to end with a stand-in AI; first real Claude run next |
-| 11 | Ship screen: live checklist, before/after slider, summary card | ✅ done |
+| 11 | Ship screen: live checklist, the changed site, summary card | ✅ done |
 | 12 | Offline replay of a recorded run (`/try?replay=latest`) | ✅ done |
 | 13 | Landing page at `/` | ✅ done |
 | 14 | Desktop app (Electron) | ⏭️ skipped, judges don't score it |
@@ -193,4 +193,4 @@ Every step streams back live ("Server-Sent Events", like a sports ticker), and e
 - **Research numbers** for the problem slide: what a small business pays a web designer, how long it takes, how many small businesses have no website.
 - **Find a real bakery menu photo** (or take one) for the demo, and write the pin lines we'll speak on stage.
 - **Test the app** like a bakery owner would, and write down anything confusing.
-- **Rehearse**: time the 4 minutes and play the judge asking hard questions ("What if the AI breaks the site?" → *every change is tested and shown before/after*).
+- **Rehearse**: time the 4 minutes and play the judge asking hard questions ("What if the AI breaks the site?" → *every change is tested, and the old version is kept*).

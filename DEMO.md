@@ -37,7 +37,7 @@ Everything you need on stage, in order. Print it or keep it on your phone.
 | 2:10 | "One press." | **Ship 3 changes** |
 | 2:20 | "It's testing like a customer: every button, a phone screen, images…" | Point at the checklist |
 | 2:30 | "It found a broken button on its own, and it's fixing it." | Point at the red ✗, then the green ✓ |
-| 2:50 | "Before and after, and a plain-English list of what changed and what it tested." | Drag the slider, then scroll down to the hours |
+| 2:50 | "There's the new site, and a plain-English list of what changed and what it tested." | Scroll the site down to the new hours |
 | 3:10 | Business: free app, bring your own key (Haiku costs under 1¢ a run), paid premium looks later. ~33M US small businesses (double-check this number before you say it). | — |
 | 3:40 | Close: "Humans were the bottleneck. Now it's one photo, three sentences, one press." | — |
 
