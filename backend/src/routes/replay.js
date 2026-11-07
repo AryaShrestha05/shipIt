@@ -9,6 +9,7 @@ const sse = require('./sse');
 //
 // The stream is the build's events, then for each ship:
 //   { type: 'replay_ship', pins }  — the notes, so the editor can show them
+//   { type: 'replay_shipping' }    — a few seconds later: "Ship" is pressed
 //   ...that ship's events...
 // and finally { type: 'replay_done' }.
 // ?speed=2 plays twice as fast; ?speed=0 sends everything at once (tests).
@@ -21,6 +22,9 @@ function wait(ms, signal) {
     signal.addEventListener('abort', function () { clearTimeout(timer); resolve(); });
   });
 }
+
+// How long the notes stay on screen before a replay presses Ship.
+const NOTES_MS = 4000;
 
 function createReplayRouter() {
   const router = express.Router();
@@ -60,6 +64,9 @@ function createReplayRouter() {
       const notes = entries.length && entries[0].event.type === 'pins' ? entries[0].event.pins : [];
       await wait(speed === 0 ? 0 : 2500 / speed, stream.signal); // a moment to look at the site first
       stream.send({ type: 'replay_ship', pins: notes });
+      // Leave the notes on screen for a moment, as if the owner just left them, then press Ship.
+      await wait(speed === 0 ? 0 : NOTES_MS / speed, stream.signal);
+      stream.send({ type: 'replay_shipping' });
       await play(entries.filter(function (entry) { return entry.event.type !== 'pins'; }));
     }
     stream.send({ type: 'replay_done' });

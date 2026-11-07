@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 
 // Two screenshots on top of each other with a handle to drag between them:
-// left of the handle is "before", right is "after".
+// left of the handle is "before", right is "after". Scroll to see the whole page.
 // props: before, after (image URLs)
 export default function BeforeAfter(props) {
   const [split, setSplit] = useState(50); // where the handle is, in % from the left
@@ -23,15 +23,20 @@ export default function BeforeAfter(props) {
       onPointerMove={function (e) { if (draggingRef.current) moveTo(e.clientX); }}
       onPointerUp={function () { draggingRef.current = false; }}
     >
-      <img className="ba-img" src={props.after} alt="Your site after the changes" draggable="false" />
-      {/* "before" sits on top, cut off at the handle */}
-      <img
-        className="ba-img ba-before"
-        src={props.before}
-        alt="Your site before the changes"
-        draggable="false"
-        style={{ clipPath: 'inset(0 ' + (100 - split) + '% 0 0)' }}
-      />
+      {/* The pictures are whole pages, so they scroll; the labels and handle stay put. */}
+      <div className="ba-scroll">
+        <div className="ba-pics">
+          <img className="ba-img" src={props.after} alt="Your site after the changes" draggable="false" />
+          {/* "before" sits on top, cut off at the handle */}
+          <img
+            className="ba-img ba-before"
+            src={props.before}
+            alt="Your site before the changes"
+            draggable="false"
+            style={{ clipPath: 'inset(0 ' + (100 - split) + '% 0 0)' }}
+          />
+        </div>
+      </div>
       <span className="ba-tag ba-tag-before">before</span>
       <span className="ba-tag ba-tag-after">after</span>
       <div className="ba-handle" style={{ left: split + '%' }}>

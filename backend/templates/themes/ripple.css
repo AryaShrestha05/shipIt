@@ -1,4 +1,4 @@
-:root { --paper: #f4efdf; --text: #214b49; --accent: #bd572f; --surface: #faf6e9; --tray: #214b4909; --font-display: 'Fraunces', Georgia, serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Fraunces', Georgia, serif; --display-weight: 400; --display-tracking: -.045em; --radius: 48px; --grain: .025; }
+:root { --paper: #f4efdf; --text: #214b49; --accent: #bd572f; --on-accent: #ffffff; --surface: #faf6e9; --tray: #214b4909; --font-display: 'Fraunces', Georgia, serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Fraunces', Georgia, serif; --display-weight: 400; --display-tracking: -.045em; --radius: 48px; --grain: .025; }
 body { background-image: radial-gradient(ellipse at 100% 10%, #b8d3be55, transparent 50%); }
 .nav { box-shadow: none; border-bottom: 1px solid var(--line); border-radius: 0; backdrop-filter: blur(20px); }
 .hero-card { transform: none; }

@@ -48,6 +48,14 @@ export default function Landing() {
         </Motion.div>
       </header>
 
+      {/* A real Ship, mid-run: it found a broken button on its own and is fixing it. */}
+      <Motion.figure className="ld-shot" {...rise}>
+        <div className="ld-shot-core">
+          <img src="/demo-shipping.jpg" alt="ShipIt testing a bakery's site like a customer, finding a broken button and fixing it" />
+        </div>
+        <figcaption>A real run: three notes applied, a broken button caught and fixed, every test passed.</figcaption>
+      </Motion.figure>
+
       <section className="ld-steps">
         {STEPS.map(function (step) {
           return (

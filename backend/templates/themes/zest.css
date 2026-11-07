@@ -2,7 +2,7 @@
 :root {
   --bg: #fff6ce;
   --ink: #35251c;
-  --accent: #b8311c;
+  --accent: #b8311c; --on-accent: #ffffff;
   --paper: var(--bg);
   --surface: #fffdf2;
   --font-display: 'Archivo Black', Impact, sans-serif;

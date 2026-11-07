@@ -81,7 +81,8 @@ async function runQa(options) {
     const brokenImages = await desktop.page.evaluate(findBrokenImages);
     const missingSids = await desktop.page.evaluate(findMissingSids, expectedSids);
     const desktopShot = path.join(options.shotsDir, 'desktop.png');
-    await desktop.page.screenshot({ path: desktopShot });
+    // The whole page, top to bottom, so the before/after shows changes further down too.
+    await desktop.page.screenshot({ path: desktopShot, fullPage: true });
 
     const phone = await openPage(browser, options.url, PHONE);
     // How wide the page really is; wider than the phone means sideways scrolling.

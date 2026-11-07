@@ -1,4 +1,4 @@
-:root { --paper: #ece9e2; --text: #252a25; --accent: #536547; --surface: #e4e2d9; --tray: transparent; --line: #252a2526; --font-display: 'Bricolage Grotesque', system-ui, sans-serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Manrope', system-ui, sans-serif; --display-weight: 500; --display-tracking: -.065em; --radius: 4px; --grain: .025; }
+:root { --paper: #ece9e2; --text: #252a25; --accent: #536547; --on-accent: #ffffff; --surface: #e4e2d9; --tray: transparent; --line: #252a2526; --font-display: 'Bricolage Grotesque', system-ui, sans-serif; --font-body: 'Manrope', system-ui, sans-serif; --font-accent: 'Manrope', system-ui, sans-serif; --display-weight: 500; --display-tracking: -.065em; --radius: 4px; --grain: .025; }
 .nav { border-radius: 0; background: transparent; box-shadow: none; border-bottom: 1px solid var(--line); }
 .core { box-shadow: none; border: 1px solid var(--line); }
 .hero-title { font-size: clamp(56px, 8vw, 122px); }

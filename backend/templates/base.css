@@ -10,7 +10,7 @@
   --line: color-mix(in srgb, var(--text) 11%, transparent);
   --surface: color-mix(in srgb, var(--paper) 70%, #fff);
   --tray: color-mix(in srgb, var(--text) 4%, transparent);
-  --on-accent: #fff;
+  --on-accent: var(--on-accent-auto, #fff); /* dark or white, picked from the accent (fill.js) */
   --font-display: Georgia, serif;
   --font-body: system-ui, sans-serif;
   --font-accent: Georgia, serif;

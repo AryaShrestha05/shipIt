@@ -79,6 +79,18 @@ function fillItems(html, items) {
   }
 }
 
+// Text color for buttons and bands in the accent color: dark on a light
+// accent (like gold), white on a dark one, so it's always readable.
+function textOnAccent(accent) {
+  const match = /^#([0-9a-f]{6})$/i.exec(String(accent || ''));
+  if (!match) return '#ffffff';
+  const value = parseInt(match[1], 16);
+  // Perceived brightness, 0 (black) to 1 (white).
+  const brightness = (0.299 * (value >> 16) + 0.587 * ((value >> 8) & 255) + 0.114 * (value & 255)) / 255;
+  if (brightness > 0.6) return '#1a1714';
+  return '#ffffff';
+}
+
 function fillTemplate(html, business) {
   const palette = business.palette || {};
   const copy = business.copy || {};
@@ -94,11 +106,13 @@ function fillTemplate(html, business) {
   return replaceAll(withCopy, {
     name: business.name,
     tagline: business.tagline,
-    hours: business.hours,
-    address: business.address,
+    // Not on the photo: say so honestly, and the owner can click it and add the real one.
+    hours: business.hours || 'Hours coming soon',
+    address: business.address || 'Address coming soon',
     bg: palette.bg,
     ink: palette.ink,
     accent: palette.accent,
+    onAccent: textOnAccent(palette.accent),
   });
 }
 

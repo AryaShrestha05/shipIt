@@ -19,7 +19,7 @@ test('normalizeBusiness keeps at most 8 items and drops bad colors', () => {
   for (let i = 0; i < 20; i++) items.push({ name: 'Item ' + i, price: 4, note: 'n' });
   const business = extract.normalizeBusiness({ items: items, palette: { bg: 'red', ink: '#111', accent: '#AABBCC' } });
   assert.strictEqual(business.items.length, 8);
-  assert.deepStrictEqual(business.items[0], { name: 'Item 0', price: '4', note: 'n' });
+  assert.deepStrictEqual(business.items[0], { name: 'Item 0', price: '$4', note: 'n' });
   assert.deepStrictEqual(business.palette, { bg: '#f4ece1', ink: '#111', accent: '#AABBCC' });
 });
 
@@ -60,4 +60,19 @@ test('extractBusiness sends the photo and sentence to the AI and cleans the answ
 test('normalizeBusiness swaps a dark background with light text, so sites stay readable', () => {
   const business = extract.normalizeBusiness({ palette: { bg: '#332d29', ink: '#ededed', accent: '#e49141' } });
   assert.deepStrictEqual(business.palette, { bg: '#ededed', ink: '#332d29', accent: '#e49141' });
+});
+
+test('a bare number price gets a dollar sign; anything else is kept as written', () => {
+  const business = extract.normalizeBusiness({ items: [
+    { name: 'Egg Sandwich', price: '6', note: '' },
+    { name: "Kelly's Toast", price: '8.5', note: '' },
+    { name: 'Latte', price: '$5', note: '' },
+    { name: 'Refill', price: 'Free', note: '' },
+    { name: 'Cut', price: '', note: '' },
+  ] });
+  assert.deepStrictEqual(business.items.map(function (i) { return i.price; }), ['$6', '$8.50', '$5', 'Free', '']);
+});
+
+test('the AI is told not to invent hours or an address', () => {
+  assert.match(extract.SYSTEM_PROMPT, /hours and address.*leave (it|them) empty/i);
 });

@@ -72,3 +72,36 @@ test('missing wording falls back to neutral defaults', () => {
   assert.ok(!html.includes('{{'));
   assert.strictEqual(html, '<h2>' + fill.DEFAULT_COPY.itemsTitle + '</h2><a>' + fill.DEFAULT_COPY.ctaLabel + '</a>');
 });
+
+test('button text is dark on a light accent and white on a dark one', () => {
+  const page = '<style>:root{--on-accent-auto:{{onAccent}}}</style>';
+  const light = fill.fillTemplate(page, { name: 'A', palette: { bg: '#fff', ink: '#000', accent: '#E8C67B' } });
+  const dark = fill.fillTemplate(page, { name: 'A', palette: { bg: '#fff', ink: '#000', accent: '#2a3d2f' } });
+  assert.ok(light.includes('--on-accent-auto:#1a1714'), light);
+  assert.ok(dark.includes('--on-accent-auto:#ffffff'), dark);
+});
+
+test('the page shell uses the automatic button text color unless a theme sets its own', () => {
+  const css = require('fs').readFileSync(require('path').join(fill.TEMPLATES_DIR, 'base.css'), 'utf8');
+  assert.ok(css.includes('--on-accent: var(--on-accent-auto, #fff)'));
+  const shell = require('fs').readFileSync(require('path').join(fill.TEMPLATES_DIR, 'base.html'), 'utf8');
+  assert.ok(shell.includes('--on-accent-auto:{{onAccent}}'));
+});
+
+test('every theme that sets its own accent also sets readable text for it', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const dir = path.join(fill.TEMPLATES_DIR, 'themes');
+  for (const file of fs.readdirSync(dir)) {
+    const css = fs.readFileSync(path.join(dir, file), 'utf8');
+    if (/--accent\s*:/.test(css)) assert.ok(/--on-accent\s*:/.test(css), file + ' sets --accent but not --on-accent');
+  }
+});
+
+test('missing hours and address say "coming soon" instead of leaving an empty box', () => {
+  const page = '<p>{{hours}}</p><p>{{address}}</p>';
+  const html = fill.fillTemplate(page, { name: 'A', hours: '', address: '' });
+  assert.strictEqual(html, '<p>Hours coming soon</p><p>Address coming soon</p>');
+  const real = fill.fillTemplate(page, { name: 'A', hours: 'Tue–Sun 7–3', address: '1 Main St' });
+  assert.strictEqual(real, '<p>Tue–Sun 7–3</p><p>1 Main St</p>');
+});

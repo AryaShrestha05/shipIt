@@ -55,7 +55,7 @@
 }
 
 /* Hero */
-.ld-hero { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 120px 0 96px; }
+.ld-hero { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 120px 0 80px; }
 .ld-eyebrow {
   display: inline-block;
   margin: 0 0 20px;
@@ -103,6 +103,25 @@
   transition: transform 0.5s var(--l-ease);
 }
 .ld-cta:hover .ld-cta-icon { transform: translate(2px, -2px) scale(1.05); }
+
+/* Product shot: a real Ship, in a machined double frame */
+.ld-shot {
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto 128px;
+}
+.ld-shot-core {
+  padding: 8px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px var(--l-line), 0 40px 120px -40px rgba(255, 190, 140, 0.25);
+}
+.ld-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+}
+.ld-shot figcaption { margin-top: 16px; text-align: center; color: var(--l-soft); font-size: 14px; }
 
 /* How it works */
 .ld-steps {
@@ -162,6 +181,7 @@
 
 @media (max-width: 767px) {
   .ld-hero { padding: 72px 0 64px; }
+  .ld-shot { margin-bottom: 80px; }
   .ld-steps { grid-template-columns: 1fr; padding-bottom: 80px; }
   .ld-looks { padding-bottom: 80px; }
   .ld-band { padding: 48px 20px; }

@@ -112,8 +112,21 @@ describe('editorReducer', function () {
       event({ type: 'run', runId: 'ab12cd34' }),
       event({ type: 'built', previewUrl: '/preview/ab12cd34/v1/index.html', layout: {} }),
       event({ type: 'replay_ship', pins: [{ sid: 'hero-title', label: 'Rosie', text: 'make it bigger' }] }),
+    ]);
+    // First the notes are shown, like the owner just left them...
+    expect(state.stage).toBe('editing');
+    expect(state.pins.map(function (p) { return p.text; })).toEqual(['make it bigger']);
+  });
+
+  test('a replay presses Ship after showing the notes', function () {
+    const state = run([
+      event({ type: 'run', runId: 'ab12cd34' }),
+      event({ type: 'built', previewUrl: '/preview/ab12cd34/v1/index.html', layout: {} }),
+      event({ type: 'replay_ship', pins: [{ sid: 'hero-title', label: 'Rosie', text: 'make it bigger' }] }),
+      event({ type: 'replay_shipping' }),
       event({ type: 'status', message: 'applying your 1 change' }),
     ]);
+    // ...then Ship runs as if pressed.
     expect(state.stage).toBe('shipping');
     expect(state.pins.map(function (p) { return p.text; })).toEqual(['make it bigger']);
     expect(state.shipLog).toEqual(['applying your 1 change']);
@@ -125,7 +138,7 @@ describe('editorReducer', function () {
       SHIPPED,
       event({ type: 'replay_ship', pins: [{ sid: 'cta-order', label: 'Order', text: 'make it green' }] }),
     ]));
-    expect(state.stage).toBe('shipping');
+    expect(state.stage).toBe('editing');
     expect(state.result).toBe(null);
     expect(state.pins.length).toBe(1);
   });

@@ -2,7 +2,7 @@
 :root {
   --bg: #fff2f4;
   --ink: #283f32;
-  --accent: #3e6149;
+  --accent: #3e6149; --on-accent: #ffffff;
   --paper: var(--bg);
   --surface: #fffaf9;
   --font-display: 'Cormorant Garamond', Georgia, serif;

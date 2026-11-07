@@ -329,17 +329,19 @@
 .ba {
   position: relative;
   width: 100%;
-  max-height: calc(100dvh - 104px);
+  height: calc(100dvh - 104px);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: inset 0 0 0 1px var(--e-line);
   cursor: ew-resize;
-  touch-action: none;
+  touch-action: pan-y; /* scroll up and down; drag sideways moves the handle */
   user-select: none;
   align-self: flex-start;
 }
+.ba-scroll { height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+.ba-pics { position: relative; }
 .ba-img { display: block; width: 100%; height: auto; }
-.ba-before { position: absolute; inset: 0; }
+.ba-before { position: absolute; top: 0; left: 0; }
 .ba-tag {
   position: absolute;
   top: 14px;

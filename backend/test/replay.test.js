@@ -65,7 +65,7 @@ test('GET /api/replay/:runId streams the build, then each ship led by its notes'
     const types = (await res.text()).split('\n\n').filter(Boolean).map(function (chunk) {
       return JSON.parse(chunk.replace(/^data: /, '')).type;
     });
-    assert.deepStrictEqual(types, ['run', 'built', 'replay_ship', 'status', 'shipped', 'replay_done']);
+    assert.deepStrictEqual(types, ['run', 'built', 'replay_ship', 'replay_shipping', 'status', 'shipped', 'replay_done']);
   } finally {
     server.close();
   }
