@@ -79,8 +79,8 @@ export default function Composer(props) {
 
   return (
     <div className="cp">
-      <h1 className="ed-headline cp-title">Dump your thoughts.</h1>
-      <p className="ed-lede cp-lede">Tell us about your business and add a photo of your menu, sign or storefront. The AI does the rest.</p>
+      <h1 className="ed-headline cp-title">What Will You Build?</h1>
+      <p className="ed-lede cp-lede">Add a photo and a few words.</p>
 
       {props.error ? <p className="ed-error">{props.error}</p> : null}
 

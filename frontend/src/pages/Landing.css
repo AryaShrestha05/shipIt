@@ -204,6 +204,18 @@
   letter-spacing: -0.05em;
 }
 
+/* ── The note: a short, blog-style read ────────────── */
+.ld-essay {
+  max-width: 640px;
+  margin: 0 auto 128px;
+  font-size: 18px;
+  line-height: 1.75;
+  letter-spacing: -0.01em;
+  color: var(--l-soft);
+}
+.ld-essay > p { margin: 0 0 24px; }
+.ld-essay-title { max-width: none; margin-bottom: 40px; color: var(--l-text); }
+
 /* Steps: one bordered grid with shared hairlines, like Vercel's feature grids. */
 .ld-steps {
   position: relative;
@@ -278,4 +290,5 @@
   .ld-step:last-of-type { border-radius: 0 0 10px 10px; }
   .ld-h2 { margin-bottom: 36px; }
   .ld-footer { flex-direction: column; gap: 4px; }
+  .ld-essay { font-size: 17px; margin-bottom: 88px; }
 }

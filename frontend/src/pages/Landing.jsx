@@ -91,7 +91,7 @@ export default function Landing() {
               Everyone deserves to be found online, no code and no designer needed. Dump your thoughts, and let the AI do the work.
             </p>
             <div className="ld-ctas ld-fade">
-              <Link to="/try" className="ld-btn">Dump your thoughts <span aria-hidden="true">↗</span></Link>
+              <Link to="/try" className="ld-btn">Try It <span aria-hidden="true">↗</span></Link>
               <a href="#how" className="ld-btn ld-btn-ghost">How it works</a>
             </div>
           </div>
@@ -102,6 +102,45 @@ export default function Landing() {
       {/* Sheet 2: rises over the hero like a new page of paper. */}
       <section className="ld-sheet" id="how">
         <div className="ld-sheet-body">
+          {/* A short note, blog-style: what this is and why I built it. */}
+          <article className="ld-essay">
+            <p className="ld-eyebrow">a note from arya</p>
+            <h2 className="ld-h2 ld-essay-title">The idea behind ShipIt.</h2>
+
+            <p>
+              Earlier this year, Garry Tan, the CEO of Y Combinator, gave a talk to the Spring 2026
+              batch. One idea from it stuck with me, and it's the reason ShipIt exists: the models are
+              good enough now. The bottleneck is how you harness them.
+            </p>
+            <p>
+              Most people use AI like a faster employee. They take the old way of making software
+              (plan it, build it, review it) and hand each step to a model. Same process for every
+              task, waiting on a human between every step.
+            </p>
+            <p>
+              But AI isn't a person. It doesn't get tired, and it doesn't care about throwing work
+              away. Its real advantage is speed: it can try something, test it, fix it, and try
+              again, over and over, in seconds.
+            </p>
+            <p>
+              So ShipIt isn't a smarter model. It's a harness around one. You dump your thoughts: a
+              photo, a sentence, a few notes on what to change. The AI builds your site, tests it like
+              a real visitor would, fixes what broke, and only then shows you. You never need to know
+              what a prompt or a deploy is.
+            </p>
+            <p>
+              And every change gets QA tested. Each time you press Ship, ShipIt opens your site in
+              a real browser and checks it on a laptop and a phone: every button and link goes
+              somewhere, all the images load, nothing errors, and it fits the screen. If something
+              broke, the AI fixes it and tests again. You only ever see the version that passed.
+            </p>
+            <p>
+              That's what I mean by closing the gap between AI and humans. You bring what you know,
+              the system does the rest.
+            </p>
+            <p>— Arya</p>
+          </article>
+
           <p className="ld-eyebrow">how it works</p>
           <h2 className="ld-h2">From your thoughts to a tested website, in three steps.</h2>
 
@@ -122,12 +161,12 @@ export default function Landing() {
 
           <div className="ld-end">
             <Link to="/try" className="ld-btn ld-btn-big">Let the AI do the work <span aria-hidden="true">↗</span></Link>
-            <p className="ld-small">Free for everyone. Bring your own Gemini, OpenAI or Claude key. It stays encrypted on your device.</p>
+            <p className="ld-small">Free for everyone. Sign in with OpenRouter, or bring your own Gemini, OpenAI or Claude key. It stays encrypted on your device.</p>
           </div>
         </div>
         <footer className="ld-footer">
           <span>shipit.</span>
-          <span>Marist Innovation Challenge 2026</span>
+          <span>Every change, QA tested.</span>
         </footer>
       </section>
     </div>
