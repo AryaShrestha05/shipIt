@@ -6,12 +6,15 @@ import { sceneMarkup } from '../blocks/scenes';
 import CustomThemeControls from '../blocks/CustomThemeControls';
 import { DEFAULT_STYLE, normalizeCustomStyle, fontFor } from '../blocks/customTheme';
 import '../blocks/scenes.css';
+import { useColorMode } from '../lib/colorMode';
+import SiteNav from '../components/SiteNav';
 import './Blocks.css';
 
 const FILTERS = ['all', 'free', 'pro'];
 const PREVIEW_WIDTH = 1280;
 
 export default function Blocks() {
+  const colorMode = useColorMode(); // light or dark, shared by every page
   const [themeId, setThemeId] = useState('canvas');
   const [customStyle, setCustomStyle] = useState(() => normalizeCustomStyle(DEFAULT_STYLE));
   const [filter, setFilter] = useState('all');
@@ -21,11 +24,8 @@ export default function Blocks() {
   const blocks = BLOCKS.filter(block => filter === 'all' || (isPro(block) ? 'pro' : 'free') === filter);
 
   return (
-    <div className="blocks-page">
-      <nav className="blocks-nav">
-        <Link to="/" className="blocks-brand">shipit.</Link>
-        <Link to="/dev" className="blocks-link">builder playground ↗</Link>
-      </nav>
+    <div className="blocks-page app" data-mode={colorMode.mode}>
+      <SiteNav colorMode={colorMode} />
       <header className="blocks-hero">
         <p className="blocks-kicker">a starting point for something yours</p>
         <h1 className="blocks-title">BLOCKS.</h1>

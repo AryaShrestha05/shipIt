@@ -1,10 +1,10 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion as Motion } from 'framer-motion';
 import { canShip, editorReducer, initialState } from '../editor/editorReducer';
 import * as api from '../editor/api';
 import { fileToBase64 } from '../lib/stream';
-import PhotoDrop from '../editor/PhotoDrop';
+import Composer from '../editor/Composer';
 import BuildStatus from '../editor/BuildStatus';
 import SitePreview from '../editor/SitePreview';
 import PinList from '../editor/PinList';
@@ -12,27 +12,33 @@ import { attachPicker, drawPins } from '../editor/picker';
 import ShipProgress from '../editor/ShipProgress';
 import ShipResult from '../editor/ShipResult';
 import KeyPanel from '../editor/KeyPanel';
+import ConnectAI from '../editor/ConnectAI';
+import { readCallback, finishSignIn } from '../lib/openrouterAuth';
 import ThemePicker from '../editor/ThemePicker';
 import { setupStep, themeFromSearch } from '../editor/setupStep';
 import { THEMES } from '../blocks/catalog';
-import { loadAiSettings } from '../lib/aiSettings';
+import { loadAiSettings, providerInfo, saveAiSettings, saveApiKey } from '../lib/aiSettings';
+import { useColorMode } from '../lib/colorMode';
+import SiteNav from '../components/SiteNav';
 import './Editor.css';
 
 // /try — the ShipIt editor. One page that changes with state.stage:
-//   photo    → three setup steps first (see setupStep.js):
-//                1 key   → KeyPanel (an AI key is required)
-//                2 theme → ThemePicker (a look is required)
-//                3 photo → PhotoDrop
+//   photo    → the setup first (see setupStep.js):
+//                connect → ConnectAI: Sign in with OpenRouter, or paste a key (first)
+//                compose → Composer: an AI-chat-style box, words + a photo
+//                theme   → ThemePicker (only if no look is picked yet)
+//                then the build starts by itself
 //   building → BuildStatus
 //   editing  → the site + the side rail with your notes (pins)
 //   shipping → the site + live progress and customer tests
 //   done     → the changed site + "what I changed and tested"
 
+// Screens simply fade into each other: quick and calm, no sliding or blur.
 const fade = {
-  initial: { opacity: 0, y: 24, filter: 'blur(8px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
-  exit: { opacity: 0, y: -16, filter: 'blur(8px)' },
-  transition: { duration: 0.7, ease: [0.32, 0.72, 0, 1] },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: 0.25, ease: 'easeOut' },
 };
 
 export default function Editor() {
@@ -44,14 +50,23 @@ export default function Editor() {
   const [siteDoc, setSiteDoc] = useState(null); // the website's page inside the iframe
   const [focusId, setFocusId] = useState(null); // which note gets the cursor
   const pinsRef = useRef(state.pins);
+  const colorMode = useColorMode(); // light or dark, shared by every page
   const [keyOpen, setKeyOpen] = useState(false); // is the "Your AI key" panel open?
   const [keyHint, setKeyHint] = useState(loadAiSettings().keyHint); // e.g. "sk-…cdef", or '' for no key
   // The picked look. ?theme=ripple (from the landing page) picks it in advance.
   const location = useLocation(); // the current address, e.g. /try?theme=ripple
+  const navigate = useNavigate();
+  // Coming back from "Sign in with OpenRouter": the address ends in ?code=…
+  const [connecting, setConnecting] = useState(Boolean(readCallback(location.search)));
+  const [connectError, setConnectError] = useState('');
+  const signInHandledRef = useRef(false); // React's dev mode runs effects twice; finish only once
   const [theme, setTheme] = useState(themeFromSearch(location.search));
   // /try?replay=latest plays a recorded run instead (the stage backup): no key or look needed.
   const replayId = new URLSearchParams(location.search).get('replay') || '';
-  const step = replayId ? 'photo' : setupStep({ keyHint: keyHint, theme: theme });
+  // draft: what the owner sent from the chat box, { file, sentence }, or null.
+  const [draft, setDraft] = useState(null);
+  const [lastDraft, setLastDraft] = useState(null); // the last message sent, so "edit" can bring it back
+  const step = replayId ? 'replay' : setupStep({ hasDraft: Boolean(draft), keyHint: keyHint, theme: theme });
   const themeName = theme ? THEMES.find(function (t) { return t.id === theme; }).name : '';
 
   // The picker is attached once per page load, so it reads the latest pins
@@ -107,14 +122,55 @@ export default function Editor() {
     return function () { controller.abort(); };
   }, [replayId]);
 
-  async function startBuild(choice) {
+  // Back from OpenRouter with ?code=…: swap it for the person's key, save it
+  // encrypted like a pasted key, and clean the code out of the address bar.
+  useEffect(function () {
+    const callback = readCallback(location.search);
+    if (!callback || signInHandledRef.current) return;
+    signInHandledRef.current = true;
+    finishSignIn(callback)
+      .then(async function (key) {
+        await saveApiKey('openrouter', key);
+        saveAiSettings({ provider: 'openrouter', model: providerInfo('openrouter').defaultModel });
+        setKeyHint(loadAiSettings().keyHint);
+      })
+      .catch(function (err) { setConnectError(err.message); })
+      .finally(function () {
+        setConnecting(false);
+        navigate('/try', { replace: true });
+      });
+  }, [location.search, navigate]);
+
+  // Builds as soon as all three are there: the chat message, a key and a look.
+  // Called after each of them is given, with the newest values.
+  function buildIfReady(next) {
+    if (next.draft && next.keyHint && next.theme) startBuild(next.draft, next.theme);
+  }
+
+  function onSend(newDraft) {
+    setLastDraft(newDraft);
+    setDraft(newDraft);
+    buildIfReady({ draft: newDraft, keyHint: keyHint, theme: theme });
+  }
+
+  function onKeySaved(settings) {
+    setKeyHint(settings.keyHint);
+    buildIfReady({ draft: draft, keyHint: settings.keyHint, theme: theme });
+  }
+
+  function onPickLook(id) {
+    setTheme(id);
+    buildIfReady({ draft: draft, keyHint: keyHint, theme: id });
+  }
+
+  async function startBuild(choice, look) {
     dispatch({ type: 'BUILD_START' });
     // Lets "start over" cancel this request halfway.
     const controller = new AbortController();
     stopRef.current = controller;
     try {
       const imageBase64 = await fileToBase64(choice.file);
-      await api.build({ imageBase64: imageBase64, mimeType: choice.file.type, sentence: choice.sentence, theme: theme }, function (event) {
+      await api.build({ imageBase64: imageBase64, mimeType: choice.file.type, sentence: choice.sentence, theme: look }, function (event) {
         // Every live event from the server goes into the reducer.
         dispatch({ type: 'SSE_EVENT', event: event });
       }, controller.signal);
@@ -140,24 +196,23 @@ export default function Editor() {
   function startOver() {
     if (stopRef.current) stopRef.current.abort();
     setSiteDoc(null);
+    setDraft(null);
+    setLastDraft(null);
     dispatch({ type: 'RESET' });
   }
 
   const name = state.business ? state.business.name : '';
 
+
   return (
-    <div className="ed-page">
-      <nav className="ed-nav">
-        <Link to="/" className="ed-brand">shipit.</Link>
-        <span className="ed-nav-name">{name}</span>
-        <span className="ed-nav-right">
-          {/* Shows "sk-…cdef" when a key is saved, so you can tell at a glance. */}
-          <button className="ed-link ed-key-btn" onClick={function () { setKeyOpen(!keyOpen); }}>
-            {keyHint ? '🔒 ' + keyHint : 'add AI key'}
-          </button>
-          {state.stage !== 'photo' ? <button className="ed-link" onClick={startOver}>start over</button> : <Link to="/blocks" className="ed-link">blocks</Link>}
-        </span>
-      </nav>
+    <div className="ed-page app" data-mode={colorMode.mode}>
+      <SiteNav colorMode={colorMode} title={name}>
+        {/* Shows which AI is connected (e.g. "🔒 OpenRouter"); opens the key panel. */}
+        <button className="ed-link ed-key-btn" title={keyHint} onClick={function () { setKeyOpen(!keyOpen); }}>
+          {keyHint ? '🔒 ' + providerInfo(loadAiSettings().provider).name : 'Connect AI'}
+        </button>
+        {state.stage !== 'photo' ? <button className="ed-link" onClick={startOver}>start over</button> : null}
+      </SiteNav>
 
       {keyOpen ? (
         <div className="ed-key-pop">
@@ -171,31 +226,34 @@ export default function Editor() {
       {/* AnimatePresence lets the old screen fade out before the new one fades in. */}
       <AnimatePresence mode="wait">
         {/* One screen per stage. cond ? (screen) : null means "show this screen only if cond". */}
-        {state.stage === 'photo' && step === 'key' ? (
-          <Motion.main key="step-key" className="ed-center" {...fade}>
-            <div className="ed-photo">
-              <p className="ed-kicker">step 1 of 3</p>
-              <h1 className="ed-headline">Add your AI key.</h1>
-              <p className="ed-lede">ShipIt is free: it runs on your own Gemini, OpenAI or Claude key. It's encrypted and stays on this device.</p>
-              <KeyPanel onChange={function (settings) { setKeyHint(settings.keyHint); }} />
-            </div>
+        {state.stage === 'photo' && (step === 'compose' || step === 'ready') ? (
+          <Motion.main key="step-compose" className="ed-center" {...fade}>
+            {/* 'ready' only shows here after a failed build: the message is kept, send again. */}
+            <Composer
+              initial={draft || lastDraft}
+              error={state.error}
+              look={themeName}
+              onChangeLook={function () { setTheme(''); }}
+              onSend={onSend}
+            />
+          </Motion.main>
+        ) : null}
+
+        {state.stage === 'photo' && step === 'connect' ? (
+          <Motion.main key="step-connect" className="ed-center" {...fade}>
+            <ConnectAI onConnected={onKeySaved} connecting={connecting} error={connectError} />
           </Motion.main>
         ) : null}
 
         {state.stage === 'photo' && step === 'theme' ? (
           <Motion.main key="step-theme" className="ed-center" {...fade}>
             <div className="ed-setup-wide">
-              <p className="ed-kicker">step 2 of 3</p>
+              <DraftRecap draft={draft} onEdit={function () { setDraft(null); }} />
+              <p className="ed-kicker">last step</p>
               <h1 className="ed-headline">Pick a look.</h1>
-              <p className="ed-lede">Your site is built in this style. You can change anything afterwards by clicking and talking.</p>
-              <ThemePicker value={theme} onPick={setTheme} />
+              <p className="ed-lede">Your site is built in this style as soon as you pick. You can change anything afterwards by clicking and talking.</p>
+              <ThemePicker value={theme} onPick={onPickLook} />
             </div>
-          </Motion.main>
-        ) : null}
-
-        {state.stage === 'photo' && step === 'photo' ? (
-          <Motion.main key="step-photo" className="ed-center" {...fade}>
-            <PhotoDrop onBuild={startBuild} error={state.error} look={themeName} onChangeLook={function () { setTheme(''); }} />
           </Motion.main>
         ) : null}
 
@@ -264,6 +322,25 @@ export default function Editor() {
           </Motion.main>
         ) : null}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// The message sent from the chat box, shown small at the top of the key
+// and look steps (like a chat history), with a way to go back and edit it.
+function DraftRecap(props) {
+  const file = props.draft ? props.draft.file : null;
+  // A temporary link to show the photo, cleaned up when the photo changes.
+  const url = useMemo(function () { return file ? URL.createObjectURL(file) : ''; }, [file]);
+  useEffect(function () {
+    return function () { if (url) URL.revokeObjectURL(url); };
+  }, [url]);
+  if (!props.draft) return null;
+  return (
+    <div className="ed-recap">
+      {url ? <img src={url} alt="" /> : null}
+      <span className="ed-recap-text">{props.draft.sentence || 'Your photo'}</span>
+      <button className="ed-link" onClick={props.onEdit}>edit</button>
     </div>
   );
 }

@@ -4,7 +4,7 @@ const retry = require('./retry');
 const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 // Gemini, behind the same small interface as the other providers.
-// The agent loop was written for Gemini's chat, so chat needs no translation.
+// The shared chat shape is Gemini's, so chat needs no translation.
 
 // Gemini's schema format is the same as JSON Schema except it rejects
 // "additionalProperties", so we make a copy without it.

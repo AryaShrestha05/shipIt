@@ -3,7 +3,7 @@ const providers = require('./providers');
 // Builds the AI for one request from the user's own key.
 //
 // The browser sends three headers with every request:
-//   x-shipit-provider: gemini | openai | claude
+//   x-shipit-provider: gemini | openai | claude | openrouter
 //   x-shipit-key:      the user's API key
 //   x-shipit-model:    optional model name
 //
@@ -14,7 +14,7 @@ const providers = require('./providers');
 // A special kind of error, so routes can tell "no key" (401) apart from other problems.
 class NoKeyError extends Error {
   constructor() {
-    super('No AI key. Add your Gemini, OpenAI or Claude key in settings.');
+    super('No AI connected. Sign in with OpenRouter, or add your Gemini, OpenAI or Claude key.');
     this.name = 'NoKeyError';
   }
 }

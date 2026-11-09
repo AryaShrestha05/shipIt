@@ -51,5 +51,5 @@ test('POST /api/ai/check says when there is no key at all', async () => {
   const router = aiRoutes.createAiRouter({ aiFromRequest: function () { throw new fromRequest.NoKeyError(); } });
   const res = await post(router, '/api/ai/check');
   assert.strictEqual(res.status, 401);
-  assert.match(res.body.error, /No AI key/);
+  assert.match(res.body.error, /No AI connected/);
 });

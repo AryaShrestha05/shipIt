@@ -118,3 +118,9 @@ test('builds a site for any sample by id', async () => {
   assert.strictEqual(res.status, 200);
   assert.ok(res.text.includes('Fix'));
 });
+
+test('dev site preview serves an empty custom.css, like a real built site has', async () => {
+  const res = await get('/api/dev/site/hearth/custom.css');
+  assert.strictEqual(res.status, 200);
+  assert.match(res.type, /text\/css/);
+});

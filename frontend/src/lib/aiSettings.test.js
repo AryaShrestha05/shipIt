@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, test } from 'vitest';
-import { aiHeaders, loadAiSettings, maskKey, removeApiKey, saveApiKey, setVault } from './aiSettings';
+import { aiHeaders, loadAiSettings, maskKey, providerInfo, removeApiKey, saveApiKey, setVault } from './aiSettings';
 
 // Node 25 has its own half-working localStorage that hides jsdom's, so each
 // test gets a simple in-memory one. Real browsers are unaffected.
@@ -82,5 +82,14 @@ describe('aiSettings', function () {
     expect(maskKey(KEY)).toBe('sk-…cdef');
     expect(maskKey('short')).toBe('••••');
     expect(maskKey('')).toBe('');
+  });
+});
+
+describe('OpenRouter in the provider list', function () {
+  test('is offered, with Claude Haiku 5.5 first (the cheap default)', function () {
+    const info = providerInfo('openrouter');
+    expect(info.id).toBe('openrouter');
+    expect(info.defaultModel).toBe('anthropic/claude-haiku-5.5');
+    expect(info.models[0].id).toBe('anthropic/claude-haiku-5.5');
   });
 });

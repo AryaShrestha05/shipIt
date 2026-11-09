@@ -5,6 +5,8 @@ import { STUDIO_PRESETS, normalizeStudioTheme, studioPreset, readThemeLibrary, s
 import { createStudioPreview } from '../blocks/studio/renderStudio';
 import { readBackgroundImage } from '../blocks/studio/uploadBackground';
 import BackgroundControls from '../blocks/studio/BackgroundControls';
+import { useColorMode } from '../lib/colorMode';
+import SiteNav from '../components/SiteNav';
 import './ThemeStudio.css';
 
 function readInitial() {
@@ -17,6 +19,7 @@ function readInitial() {
 }
 
 export default function ThemeStudio() {
+  const colorMode = useColorMode(); // light or dark, shared by every page
   const [initial] = useState(readInitial);
   const [library, setLibrary] = useState(initial.library);
   const first = initial.library.themes.find(theme => theme.id === initial.library.activeId);
@@ -90,7 +93,8 @@ export default function ThemeStudio() {
     finally { if (mounted.current) setUploading(false); }
   }
 
-  return <div className="studio-page">
+  return <div className="studio-page app" data-mode={colorMode.mode}>
+    <SiteNav colorMode={colorMode} />
     <header className="studio-header">
       <Link to="/blocks" onClick={event => { if (!canDiscard()) event.preventDefault(); }}>← Blocks</Link>
       <div><h1>Theme Studio</h1><p>Choose a look. Make it yours.</p></div>

@@ -37,6 +37,17 @@ export const PROVIDERS = [
       { id: 'claude-opus-5-5', label: 'Opus 5.5 · strongest, priciest' },
     ],
   },
+  {
+    // "Sign in with OpenRouter" saves its key here too (lib/openrouterAuth.js).
+    // One account reaches Claude, Gemini and GPT; paid with OpenRouter credits.
+    id: 'openrouter', name: 'OpenRouter', defaultModel: 'anthropic/claude-haiku-5.5', voice: false,
+    models: [
+      { id: 'anthropic/claude-haiku-5.5', label: 'Claude Haiku 5.5 · fast, about 1¢ a Ship' },
+      { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash · fast, cheap' },
+      { id: 'openai/gpt-5-mini', label: 'GPT-5 mini · fast, cheap' },
+      { id: 'anthropic/claude-sonnet-5.5', label: 'Claude Sonnet 5.5 · better edits' },
+    ],
+  },
 ];
 
 // Made on first use, so pages that never touch the key never open IndexedDB.

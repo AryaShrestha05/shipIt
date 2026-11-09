@@ -44,6 +44,9 @@ router.get('/dev/site/:theme/index.html', function (req, res) {
 
 // GET /api/dev/site/noir/theme.css (also base.css, effects.js)
 router.get('/dev/site/:theme/:file', function (req, res) {
+  // Every page links custom.css (where Ship puts style changes). A live
+  // preview has had no changes yet, so it's empty here.
+  if (req.params.file === 'custom.css') return res.type('css').send('');
   const files = compose.siteFiles(req.params.theme);
   for (const file of files) {
     if (file.to === req.params.file) return res.sendFile(file.from);

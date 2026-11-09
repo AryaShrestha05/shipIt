@@ -1,57 +1,81 @@
-/* The "Your AI key" panel. Uses the editor's colors when inside it, with
+/* The "Your AI key" panel. Uses the editor's colours when inside it, with
    fallbacks so it also works on the plain /dev page. */
 
 .kp {
   width: min(380px, calc(100vw - 32px));
-  padding: 18px;
-  border-radius: 20px;
-  background: var(--e-card, #141415);
-  color: var(--e-text, #f1ede6);
-  box-shadow: inset 0 0 0 1px var(--e-line, rgba(255, 255, 255, 0.08)), 0 24px 60px -20px rgba(0, 0, 0, 0.6);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--e-line, #e4e4e7);
+  background: var(--e-card, #ffffff);
+  color: var(--e-text, #0a0a0a);
+  box-shadow: var(--e-shadow, 0 8px 24px -12px rgba(0, 0, 0, 0.12));
+  font-family: 'Geist Variable', system-ui, sans-serif;
   font-size: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 .kp-head { display: flex; align-items: center; justify-content: space-between; }
-.kp-head h3 { margin: 0; font-size: 15px; font-weight: 600; }
-.kp-close { border: 0; background: transparent; color: var(--e-soft, #8b877f); font-size: 20px; cursor: pointer; }
+.kp-head h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+.kp-close {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--e-soft, #666a70);
+  font-size: 18px;
+  cursor: pointer;
+}
+.kp-close:hover { background: var(--e-raised, #f4f4f5); color: var(--e-text, #0a0a0a); }
 
 .kp-field { display: flex; flex-direction: column; gap: 6px; }
-.kp-field span { color: var(--e-soft, #8b877f); font-size: 12px; }
+.kp-field span { color: var(--e-soft, #666a70); font-size: 12px; }
 .kp-field em { font-style: normal; opacity: 0.7; }
 .kp-field input,
 .kp-field select {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 0;
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: inset 0 0 0 1px var(--e-line, rgba(255, 255, 255, 0.08));
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--e-line, #e4e4e7);
+  background: var(--e-card, #ffffff);
   color: inherit;
   font: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .kp-field input:focus,
-.kp-field select:focus { outline: none; box-shadow: inset 0 0 0 1px rgba(241, 237, 230, 0.4); }
+.kp-field select:focus {
+  outline: none;
+  border-color: var(--e-line-strong, #d4d4d8);
+  box-shadow: 0 0 0 3px var(--e-focus, rgba(10, 10, 10, 0.18));
+}
 
 .kp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .kp-actions button {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 0;
-  background: rgba(255, 255, 255, 0.06);
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid var(--e-line-strong, #d4d4d8);
+  background: var(--e-card, #ffffff);
   color: inherit;
   font: inherit;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.4s var(--e-ease, ease), opacity 0.3s;
+  transition: background-color 0.2s, opacity 0.2s, transform 0.3s;
 }
-.kp-actions button:active { transform: scale(0.97); }
-.kp-actions button:disabled { opacity: 0.35; cursor: not-allowed; }
-.kp-actions .kp-primary { background: var(--e-text, #f1ede6); color: var(--e-bg, #0b0b0c); font-weight: 600; }
+.kp-actions button:not(:disabled):hover { background: var(--e-raised, #f4f4f5); }
+.kp-actions button:active { transform: scale(0.98); }
+.kp-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+.kp-actions .kp-primary {
+  border-color: var(--e-btn-bg, #0a0a0a);
+  background: var(--e-btn-bg, #0a0a0a);
+  color: var(--e-btn-text, #ffffff);
+}
+.kp-actions .kp-primary:not(:disabled):hover { background: var(--e-btn-bg, #0a0a0a); opacity: 0.88; }
 
 .kp-note,
 .kp-status,
 .kp-lock { margin: 0; font-size: 12px; line-height: 1.5; }
-.kp-status { color: var(--e-text, #f1ede6); }
+.kp-status { color: var(--e-text, #0a0a0a); }
 .kp-note,
-.kp-lock { color: var(--e-soft, #8b877f); }
+.kp-lock { color: var(--e-soft, #666a70); }

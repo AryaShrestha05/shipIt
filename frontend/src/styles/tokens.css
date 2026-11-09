@@ -1,0 +1,45 @@
+/* Shared design tokens for every app page (/try, /blocks, Theme Studio, /dev).
+   Put class="app" and data-mode="light|dark" on a page's outer element.
+   The look follows Vercel's site: Geist, monochrome, hairline borders,
+   6px buttons and inputs, 10px cards. The landing page has its own copy
+   in Landing.css because its hero sits on a photo. */
+
+/* Light mode: soft warm off-whites, not pure white */
+.app {
+  --e-bg: #f3f2ef;
+  --e-card: #faf9f7;
+  --e-raised: #ecebe7;      /* inputs, hover fills */
+  --e-text: #0a0a0a;
+  --e-soft: #66645f;
+  --e-faint: #a3a19b;
+  --e-line: #e2e0db;
+  --e-line-strong: #d3d1cb;
+  --e-btn-bg: #0a0a0a;
+  --e-btn-text: #ffffff;
+  --e-focus: rgba(10, 10, 10, 0.12);
+  --e-shadow: 0 1px 2px rgba(40, 30, 20, 0.04), 0 8px 24px -12px rgba(40, 30, 20, 0.12);
+  --e-pin: #7c5cff;         /* matches the pins drawn on the site (picker.js) */
+  --e-pass: #16a34a;
+  --e-fail: #e5484d;
+  --e-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--e-bg);
+  color: var(--e-text);
+  font-family: 'Geist Variable', system-ui, sans-serif;
+  transition: background-color 0.4s var(--e-ease), color 0.4s var(--e-ease);
+}
+
+/* Dark mode: near-black with a cool slate tint, like the landing page. */
+.app[data-mode='dark'] {
+  --e-bg: #0b0c0d;
+  --e-card: #111214;
+  --e-raised: #17191b;
+  --e-text: #ededed;
+  --e-soft: #9a9ea3;
+  --e-faint: #5d6166;
+  --e-line: #222427;
+  --e-line-strong: #2e3135;
+  --e-btn-bg: #ededed;
+  --e-btn-text: #0a0a0a;
+  --e-focus: rgba(237, 237, 237, 0.2);
+  --e-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.7);
+}

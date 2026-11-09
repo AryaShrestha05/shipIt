@@ -18,9 +18,9 @@ export default function BuildStatus(props) {
               <Motion.li
                 key={line}
                 className={'ed-status-line' + (done ? ' is-done' : '')}
-                initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
               >
                 <span className="ed-status-dot">{done ? '✓' : ''}</span>
                 {line}

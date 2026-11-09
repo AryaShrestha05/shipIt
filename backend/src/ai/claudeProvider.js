@@ -1,7 +1,7 @@
 const Anthropic = require('@anthropic-ai/sdk');
 
 // Claude, behind the same small interface as the other providers.
-// The agent loop speaks "Gemini chat" (sendMessage → functionCalls()/text()),
+// The shared chat shape is "Gemini chat" (sendMessage → functionCalls()/text()),
 // so this file translates both ways.
 
 // Haiku 5.5: $0.10 in / $0.50 out per million tokens, 40x cheaper than Opus.
@@ -74,7 +74,7 @@ function create(options, client) {
 
             return {
               response: {
-                // These two functions make Claude's reply look like Gemini's, which is what agent/loop.js reads.
+                // These two functions make Claude's reply look like Gemini's (the shared chat shape).
                 functionCalls: function () {
                   if (refused || toolUses.length === 0) return undefined;
                   return toolUses.map(function (block) { return { name: block.name, args: block.input }; });

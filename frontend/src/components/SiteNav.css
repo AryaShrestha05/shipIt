@@ -1,0 +1,85 @@
+/* The shared navbar. Uses the page's tokens (styles/tokens.css), with
+   fallbacks, and a white variant for the landing page's photo hero. */
+
+.nav {
+  position: relative;
+  z-index: 10;
+  height: 56px;
+  border-bottom: 1px solid var(--e-line, #e2e0db);
+  background: var(--e-bg, #f3f2ef);
+  color: var(--e-text, #0a0a0a);
+  font-family: 'Geist Variable', system-ui, sans-serif;
+  font-size: 14px;
+}
+.nav-inner {
+  height: 100%;
+  width: min(1440px, calc(100% - 32px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+}
+.nav .nav-brand { color: inherit; text-decoration: none; font-weight: 600; font-size: 17px; letter-spacing: -0.04em; }
+.nav-title {
+  min-width: 0;
+  text-align: center;
+  color: var(--e-soft, #66645f);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-right { display: flex; align-items: center; gap: 4px; }
+.nav .nav-link {
+  /* .nav .x so a page's own button/link styles can't restyle the navbar */
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--e-soft, #66645f);
+  line-height: 1;
+  font: inherit;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
+}
+.nav .nav-link:hover, .nav .nav-link.is-current { color: var(--e-text, #0a0a0a); background: var(--e-raised, #ecebe7); }
+.nav .nav-cta {
+  border: 0;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 0 12px;
+  border-radius: 6px;
+  background: var(--e-btn-bg, #0a0a0a);
+  color: var(--e-btn-text, #ffffff);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.nav .nav-cta:hover { opacity: 0.88; }
+
+/* Landing hero: transparent, white, over the photo. */
+.nav.is-overlay {
+  background: transparent;
+  color: #ffffff;
+  border-bottom-color: rgba(255, 255, 255, 0.22);
+  --e-soft: rgba(255, 255, 255, 0.82);
+  --e-text: #ffffff;
+  --e-raised: rgba(255, 255, 255, 0.14);
+  --e-line: rgba(255, 255, 255, 0.3);
+  --e-btn-bg: #ffffff;
+  --e-btn-text: #0a0a0a;
+}
+
+@media (max-width: 640px) {
+  .nav-title { display: none; }
+  .nav-inner { grid-template-columns: auto 1fr; }
+  .nav-right { justify-self: end; }
+}

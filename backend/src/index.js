@@ -4,7 +4,6 @@ const express = require('express');
 const cors = require('cors');
 
 const dev = require('./routes/dev');
-const blocks = require('./routes/blocks');
 const aiRoutes = require('./routes/ai');
 const build = require('./routes/build');
 const transcribe = require('./routes/transcribe');
@@ -25,7 +24,6 @@ app.use('/preview', express.static(workspace.WORKSPACES_DIR));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 // Plug in each route file under /api: '/build' inside build.js becomes POST /api/build.
 app.use('/api', dev.router);
-app.use('/api', blocks.router);
 app.use('/api', aiRoutes.createAiRouter());
 app.use('/api', build.createBuildRouter());
 app.use('/api', transcribe.createTranscribeRouter());

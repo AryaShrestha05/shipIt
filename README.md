@@ -51,14 +51,14 @@ npm run dev                       # open http://localhost:5173
 | Page | What it's for |
 |---|---|
 | **/** | Landing page: the pitch, how it works, and the looks to pick from |
-| **/try** | The real app: ① your AI key → ② pick a look → ③ photo → site → click and speak notes → Ship |
+| **/try** | The real app: write about your business + add a photo → your AI key and a look (if not set yet) → site → click and speak notes → Ship |
 | **/try?replay=latest** | Stage backup: plays the last recorded run, no AI or internet needed |
 | **/blocks** | Gallery of every section and theme (free and pro), plus Theme Studio |
 | **/dev** | Plain test page with one box per feature, sample businesses, and the list of replays |
 
 Tests: `cd backend && npm test` and `cd frontend && npm test`. Everything should pass.
 
-**Keys:** every user brings their own Gemini, OpenAI or Claude key (step 1 on `/try`). It's encrypted in their browser (AES-256, with a lock that can't be copied out) and only a hint like `sk-…cdef` is stored in plain text. The server uses it for one request and never saves it. `backend/.env` can hold a backup Gemini key; it's never committed (`.gitignore` blocks it).
+**Connecting an AI** (the first screen on `/try`): **Sign in with OpenRouter** (one click; OpenRouter's official PKCE sign-in, the browser swaps the code for the person's key directly with OpenRouter, see `frontend/src/lib/openrouterAuth.js`), or paste a Gemini, OpenAI or Claude key. People pay with their own OpenRouter credits or API key. Claude Pro/Max and ChatGPT subscriptions can't be used: their terms only allow them in Anthropic's and OpenAI's own apps. Either way the key is encrypted in their browser (AES-256, with a lock that can't be copied out) and only a hint like `sk-…cdef` is stored in plain text. The server uses it for one request and never saves it. `backend/.env` can hold a backup Gemini key; it's never committed (`.gitignore` blocks it).
 
 **Cost:** Claude defaults to Haiku 5.5. One Ship is at most 3 AI calls of about 4,000 tokens each, so under 1¢; $5 of credit covers hundreds of runs. Type `claude-sonnet-5-5` in the key panel's Model box for stronger edits.
 
@@ -76,7 +76,6 @@ shipIt/
 │   │   ├── vision/          reading a photo into business info (name, items, colors)
 │   │   ├── site/            snapping sections together into a website
 │   │   ├── workspace/       each site's versions: v1, v2, … (old ones never change)
-│   │   ├── agent/           the AI's work loop and the tools it may use (read, edit, write files)
 │   │   ├── ship/            Ship: apply notes → test → fix → summary (edits.js applies the AI's edit plan safely)
 │   │   ├── qa/              testing a site like a customer in a hidden browser
 │   │   └── runs/            recording every run, and replaying it on stage (replay.js)
@@ -88,7 +87,9 @@ shipIt/
 │       ├── App.jsx          which page shows for which address
 │       ├── pages/           the pages: Landing (/), Editor (/try), Blocks, ThemeStudio, Dev
 │       ├── blocks/          the theme gallery's data, previews and Theme Studio
-│       ├── editor/          the editor's pieces: key panel, look picker, photo drop, picker, notes, voice, Ship screen, state
+│       ├── components/      shared pieces: SiteNav (the one navbar every page uses)
+│       ├── styles/          tokens.css: shared colours, fonts and light/dark mode
+│       ├── editor/          the editor's pieces: chat box, key panel, look picker, picker, notes, voice, Ship screen, state
 │       └── lib/             small shared helpers: AI key settings, encrypted key vault, live-stream reader
 └── docs/superpowers/        the design spec and the step-by-step build plan
 ```
@@ -131,7 +132,6 @@ Tips:
 | Kitchen, where the work happens | **Backend**: a server that runs the AI and edits files | `backend/` |
 | Waiter carrying orders back and forth | **API**: web requests like `POST /api/build` | `backend/src/routes/` |
 | The chef | **The AI** (Gemini, OpenAI or Claude) | `backend/src/ai/` |
-| The chef's tools (knife, oven) | **Tools** the AI may use: read, edit and write files | `backend/src/agent/tools.js` |
 | The food inspector | **QA**: opens the site like a customer and finds problems | `backend/src/qa/runQa.js` |
 
 ### The whole flow

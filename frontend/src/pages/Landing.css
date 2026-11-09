@@ -1,190 +1,281 @@
-/* / — the landing page. Same calm dark as the editor, so the two feel like one product. */
+/* / — the landing page: a hero, and one paper sheet that slides over it.
+   The look follows Vercel's site: Geist fonts, monochrome, hairline borders. */
 
+/* Light mode: soft warm off-whites, not pure white */
 .ld-page {
-  --l-bg: #0b0b0c;
-  --l-text: #f1ede6;
-  --l-soft: #8b877f;
-  --l-line: rgba(255, 255, 255, 0.08);
-  --l-ease: cubic-bezier(0.32, 0.72, 0, 1);
-  min-height: 100dvh;
-  background:
-    radial-gradient(60% 40% at 50% 0%, rgba(255, 190, 140, 0.08), transparent 70%),
-    var(--l-bg);
+  --l-desk: #ecebe7;        /* the hero, underneath */
+  --l-paper: #f6f5f2;       /* the sheet that rises */
+  --l-text: #0a0a0a;
+  --l-soft: #66645f;
+  --l-faint: #a3a19b;
+  --l-line: #e2e0db;
+  --l-line-strong: #d3d1cb;
+  --l-btn-bg: #0a0a0a;
+  --l-btn-text: #ffffff;
+  --l-ghost-hover: #ecebe7;
+  --l-card-hover: #efeeea;
+  --l-shadow: rgba(0, 0, 0, 0.12);
+  --l-dim: rgba(0, 0, 0, 0.08);
+  --l-glow: rgba(0, 0, 0, 0.04);
+  --l-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--l-desk);
   color: var(--l-text);
-  font-family: 'DM Sans', system-ui, sans-serif;
-  overflow-x: hidden;
+  font-family: 'Geist Variable', system-ui, sans-serif;
+  overflow-x: clip;
+  transition: background-color 0.4s var(--l-ease), color 0.4s var(--l-ease);
 }
 
-/* Floating pill nav */
-.ld-nav {
+/* Dark mode: near-black with a cool slate tint taken from #5D6166. */
+.ld-page[data-mode='dark'] {
+  --l-desk: #0b0c0d;
+  --l-paper: #111214;
+  --l-text: #ededed;
+  --l-soft: #9a9ea3;
+  --l-faint: #5d6166;
+  --l-line: #222427;
+  --l-line-strong: #2e3135;
+  --l-btn-bg: #ededed;
+  --l-btn-text: #0a0a0a;
+  --l-ghost-hover: #1a1c1e;
+  --l-card-hover: #15171a;
+  --l-shadow: rgba(0, 0, 0, 0.7);
+  --l-dim: rgba(0, 0, 0, 0.55);
+  --l-glow: rgba(93, 97, 102, 0.22);
+}
+
+/* ── Sheet 1: the hero ─────────────────────────────── */
+.ld-hero {
   position: sticky;
-  top: 16px;
-  z-index: 10;
-  margin: 16px auto 0;
-  width: min(1200px, calc(100% - 32px));
-  padding: 8px 8px 8px 20px;
-  border-radius: 999px;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(11, 11, 12, 0.7);
-  backdrop-filter: blur(16px);
-  box-shadow: inset 0 0 0 1px var(--l-line);
-  font-size: 14px;
+  flex-direction: column;
+  /* The hero sits on a photo in both modes, so its text is always light.
+     These override the page colours inside the hero only. */
+  --l-text: #ffffff;
+  --l-soft: rgba(255, 255, 255, 0.82);
+  --l-faint: rgba(255, 255, 255, 0.62);
+  --l-line: rgba(255, 255, 255, 0.22);
+  --l-line-strong: rgba(255, 255, 255, 0.4);
+  --l-btn-bg: #ffffff;
+  --l-btn-text: #0a0a0a;
+  --l-ghost-hover: rgba(255, 255, 255, 0.14);
+  color: var(--l-text);
+  background: #1e2a22;
 }
-.ld-brand { color: var(--l-text); text-decoration: none; font-weight: 600; }
-.ld-nav-links { display: flex; align-items: center; gap: 6px; }
-.ld-link {
-  color: var(--l-soft);
-  text-decoration: none;
-  padding: 8px 12px;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-  transition: color 0.3s;
+/* The photo, with a dark wash on top so the white text stays readable. */
+.ld-hero-photo {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 10, 0.55) 0%, rgba(8, 12, 10, 0.25) 40%, rgba(8, 12, 10, 0.6) 100%),
+    url('/hero-bg.jpg') center / cover no-repeat;
+  transform-origin: 50% 0%;
 }
-.ld-link:hover { color: var(--l-text); }
-.ld-pill {
-  padding: 9px 16px;
-  border-radius: 999px;
-  background: var(--l-text);
-  color: var(--l-bg);
-  text-decoration: none;
-  font-weight: 600;
+.ld-hero-inner { position: relative; z-index: 1; }
+.ld-title,
+.ld-lede { text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35); }
+/* Buttons over the photo get a frosted look. */
+.ld-hero .ld-btn-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.ld-hero-inner {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  transform-origin: 50% 0%;
+}
+.ld-hero-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--l-dim);
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* Hero */
-.ld-hero { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 120px 0 80px; }
+.ld-hero-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 6vh;
+}
 .ld-eyebrow {
-  display: inline-block;
-  margin: 0 0 20px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 10px;
-  letter-spacing: 0.2em;
+  margin: 0 0 24px;
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--l-soft);
-  box-shadow: inset 0 0 0 1px var(--l-line);
 }
 .ld-title {
-  margin: 0 0 28px;
-  font-family: 'Yeseva One', Georgia, serif;
-  font-weight: 400;
-  font-size: clamp(56px, 10vw, 140px);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+  font-weight: 600;
+  font-size: clamp(48px, 8.5vw, 112px);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
 }
-.ld-title em { font-style: normal; color: #ffcf9f; }
-.ld-lede { margin: 0; max-width: 46ch; color: var(--l-soft); font-size: 18px; line-height: 1.55; }
-.ld-ctas { display: flex; align-items: center; gap: 12px; margin-top: 40px; flex-wrap: wrap; }
+/* Each line sits in its own clipped box so it can rise into view. */
+.ld-line { display: block; overflow: hidden; padding-bottom: 0.08em; }
+.ld-line > span { display: block; }
+.ld-title em {
+  font-style: normal;
+  /* Fades from the text colour to grey, Vercel-style. */
+  background: linear-gradient(180deg, var(--l-text) 20%, var(--l-faint));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ld-lede {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--l-soft);
+  font-size: 18px;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+.ld-ctas { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 36px; flex-wrap: wrap; }
 
-/* Button with its arrow in its own circle */
-.ld-cta {
+/* Buttons: 6px corners. */
+.ld-btn {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 8px 8px 8px 24px;
-  border-radius: 999px;
-  background: var(--l-text);
-  color: var(--l-bg);
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--l-btn-bg);
+  border-radius: 6px;
+  background: var(--l-btn-bg);
+  color: var(--l-btn-text);
   text-decoration: none;
-  font-weight: 600;
-  transition: transform 0.5s var(--l-ease);
+  font-weight: 500;
+  font-size: 15px;
+  transition: opacity 0.2s, background-color 0.2s, transform 0.3s var(--l-ease);
 }
-.ld-cta:active { transform: scale(0.98); }
-.ld-cta-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(0, 0, 0, 0.08);
-  transition: transform 0.5s var(--l-ease);
+.ld-btn:hover { opacity: 0.88; }
+.ld-btn span { display: inline-block; transition: transform 0.3s var(--l-ease); }
+.ld-btn:hover span { transform: translate(2px, -2px); }
+.ld-btn:active { transform: scale(0.98); }
+.ld-btn-ghost {
+  background: transparent;
+  color: var(--l-text);
+  border-color: var(--l-line-strong);
 }
-.ld-cta:hover .ld-cta-icon { transform: translate(2px, -2px) scale(1.05); }
+.ld-btn-ghost:hover { opacity: 1; background: var(--l-ghost-hover); }
+.ld-btn-small { height: 32px; padding: 0 12px; font-size: 13px; }
+.ld-btn-big { height: 52px; padding: 0 28px; font-size: 16px; }
 
-/* Product shot: a real Ship, in a machined double frame */
-.ld-shot {
-  width: min(1200px, calc(100% - 32px));
-  margin: 0 auto 128px;
+/* ── Sheet 2: the paper that rises ─────────────────── */
+.ld-sheet {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--l-paper);
+  border-top: 1px solid var(--l-line-strong);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -30px 80px -30px var(--l-shadow);
+  transition: background-color 0.4s var(--l-ease);
 }
-.ld-shot-core {
-  padding: 8px;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.03);
-  box-shadow: inset 0 0 0 1px var(--l-line), 0 40px 120px -40px rgba(255, 190, 140, 0.25);
-}
-.ld-shot img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 20px;
-}
-.ld-shot figcaption { margin-top: 16px; text-align: center; color: var(--l-soft); font-size: 14px; }
-
-/* How it works */
-.ld-steps {
-  width: min(1200px, calc(100% - 32px));
+.ld-sheet-body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 0 0 128px;
+  padding: 112px 0 64px;
+}
+.ld-h2 {
+  margin: 0 0 56px;
+  max-width: 20ch;
+  font-weight: 600;
+  font-size: clamp(32px, 4.5vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+}
+
+/* Steps: one bordered grid with shared hairlines, like Vercel's feature grids. */
+.ld-steps {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  border: 1px solid var(--l-line);
+  border-radius: 10px;
 }
 .ld-step {
-  padding: 28px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.025);
-  box-shadow: inset 0 0 0 1px var(--l-line);
+  padding: 32px;
+  border-left: 1px solid var(--l-line);
+  transition: background-color 0.3s;
 }
-.ld-step-n { font-size: 12px; letter-spacing: 0.15em; color: #ffcf9f; }
-.ld-step h3 { margin: 18px 0 10px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-.ld-step p { margin: 0; color: var(--l-soft); line-height: 1.55; font-size: 15px; }
+.ld-step:first-of-type { border-left: 0; border-radius: 10px 0 0 10px; }
+.ld-step:last-of-type { border-radius: 0 10px 10px 0; }
+.ld-step:hover { background: var(--l-card-hover); }
+.ld-step-n {
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--l-faint);
+}
+.ld-step h3 { margin: 40px 0 8px; font-size: 20px; font-weight: 600; letter-spacing: -0.03em; }
+.ld-step p { margin: 0; color: var(--l-soft); line-height: 1.6; font-size: 15px; }
 
-/* Looks */
-.ld-looks { width: min(1200px, calc(100% - 32px)); margin: 0 auto; padding: 0 0 128px; scroll-margin-top: 96px; }
-.ld-section-head { margin-bottom: 40px; }
-.ld-section-head h2,
-.ld-band h2 {
-  margin: 0 0 14px;
-  font-family: 'Yeseva One', Georgia, serif;
-  font-weight: 400;
-  font-size: clamp(36px, 5vw, 60px);
-  line-height: 1;
-  letter-spacing: -0.02em;
+/* The little "+" marks on two corners of the grid. */
+.ld-plus {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
 }
+.ld-plus::before,
+.ld-plus::after {
+  content: '';
+  position: absolute;
+  background: var(--l-soft);
+}
+.ld-plus::before { left: 7px; top: 0; width: 1px; height: 15px; }
+.ld-plus::after { top: 7px; left: 0; height: 1px; width: 15px; }
+.ld-plus-tl { top: -8px; left: -8px; }
+.ld-plus-br { bottom: -8px; right: -8px; }
 
-/* Closing band */
-.ld-band {
-  width: min(1200px, calc(100% - 32px));
-  margin: 0 auto 64px;
-  padding: 72px 32px;
-  border-radius: 32px;
-  text-align: center;
-  background: radial-gradient(80% 120% at 50% 0%, rgba(255, 190, 140, 0.12), transparent 70%), rgba(255, 255, 255, 0.02);
-  box-shadow: inset 0 0 0 1px var(--l-line);
+.ld-end {
+  margin-top: 56px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
 }
-.ld-band p { margin: 0 auto 32px; max-width: 52ch; color: var(--l-soft); line-height: 1.55; }
+.ld-small { margin: 0; max-width: 42ch; color: var(--l-soft); font-size: 14px; line-height: 1.55; }
 
 .ld-footer {
-  width: min(1200px, calc(100% - 32px));
+  position: relative;
+  z-index: 1;
+  width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 24px 0 40px;
+  padding: 20px 0 28px;
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  color: var(--l-soft);
-  font-size: 13px;
+  color: var(--l-faint);
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
+  font-size: 12px;
   border-top: 1px solid var(--l-line);
 }
 
 @media (max-width: 767px) {
-  .ld-hero { padding: 72px 0 64px; }
-  .ld-shot { margin-bottom: 80px; }
-  .ld-steps { grid-template-columns: 1fr; padding-bottom: 80px; }
-  .ld-looks { padding-bottom: 80px; }
-  .ld-band { padding: 48px 20px; }
-  .ld-footer { flex-direction: column; }
-  .ld-nav .ld-link { display: none; }
+  .ld-sheet-body { padding: 72px 0 48px; }
+  .ld-steps { grid-template-columns: 1fr; }
+  .ld-step { border-left: 0; border-top: 1px solid var(--l-line); }
+  .ld-step:first-of-type { border-top: 0; border-radius: 10px 10px 0 0; }
+  .ld-step:last-of-type { border-radius: 0 0 10px 10px; }
+  .ld-h2 { margin-bottom: 36px; }
+  .ld-footer { flex-direction: column; gap: 4px; }
 }

@@ -253,3 +253,28 @@ test('gemini: extractJson without a photo sends text only', async () => {
   const parts = client.calls[0];
   assert.ok(parts.every(function (p) { return !p.inlineData; }));
 });
+
+// ---------- OpenRouter (sign in with OpenRouter) ----------
+
+test('openrouter: defaults to Claude Haiku 5.5 and reads a photo through the OpenAI-style API', async () => {
+  const client = fakeOpenAI([{ choices: [{ message: { content: '{"name":"Kelly\'s"}' } }] }]);
+  const ai = providers.createAI({ provider: 'openrouter', apiKey: 'sk-or-v1-test' }, client);
+  assert.strictEqual(ai.provider, 'openrouter');
+  assert.strictEqual(ai.model, 'anthropic/claude-haiku-5.5');
+  const result = await ai.extractJson({ system: 's', prompt: 'p', imageBase64: 'AAAA', mimeType: 'image/png', schema: { type: 'object' } });
+  assert.deepStrictEqual(result, { name: "Kelly's" });
+  assert.strictEqual(client.sent[0].model, 'anthropic/claude-haiku-5.5');
+  assert.strictEqual(client.sent[0].messages[1].content[0].image_url.url, 'data:image/png;base64,AAAA');
+});
+
+test('openrouter: a picked model is used, and there is no speech-to-text', async () => {
+  const ai = providers.createAI({ provider: 'openrouter', apiKey: 'k', model: 'google/gemini-2.5-flash' }, fakeOpenAI([]));
+  assert.strictEqual(ai.model, 'google/gemini-2.5-flash');
+  assert.strictEqual(ai.canTranscribe, false);
+});
+
+test('openrouter: the request headers pick it', () => {
+  const headers = { 'x-shipit-provider': 'openrouter', 'x-shipit-key': 'sk-or-v1-test' };
+  const ai = fromRequest.aiFromRequest({ get: function (name) { return headers[name]; } });
+  assert.strictEqual(ai.provider, 'openrouter');
+});

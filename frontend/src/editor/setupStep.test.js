@@ -2,16 +2,21 @@ import { describe, expect, test } from 'vitest';
 import { setupStep, themeFromSearch } from './setupStep';
 
 describe('setupStep', function () {
-  test('no key: the key comes first, even with a theme picked', function () {
-    expect(setupStep({ keyHint: '', theme: 'ripple' })).toBe('key');
+  test('no AI connected: connecting comes first, before anything else', function () {
+    expect(setupStep({ hasDraft: false, keyHint: '', theme: '' })).toBe('connect');
+    expect(setupStep({ hasDraft: true, keyHint: '', theme: 'ripple' })).toBe('connect');
   });
 
-  test('a key but no look: pick a look next', function () {
-    expect(setupStep({ keyHint: 'sk-…cdef', theme: '' })).toBe('theme');
+  test('connected but nothing written yet: the chat box', function () {
+    expect(setupStep({ hasDraft: false, keyHint: 'sk-…cdef', theme: 'ripple' })).toBe('compose');
   });
 
-  test('key and look: the photo', function () {
-    expect(setupStep({ keyHint: 'sk-…cdef', theme: 'ripple' })).toBe('photo');
+  test('connected and written, but no look: pick a look next', function () {
+    expect(setupStep({ hasDraft: true, keyHint: 'sk-…cdef', theme: '' })).toBe('theme');
+  });
+
+  test('all three: ready to build', function () {
+    expect(setupStep({ hasDraft: true, keyHint: 'sk-…cdef', theme: 'ripple' })).toBe('ready');
   });
 });
 

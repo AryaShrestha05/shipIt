@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import KeyPanel from '../editor/KeyPanel';
+import SiteNav from '../components/SiteNav';
+import { useColorMode } from '../lib/colorMode';
+import './Dev.css';
 import { fileToBase64, postStream } from '../lib/stream';
 
 // Bare test page — no design on purpose. Each feature adds a section here so
@@ -15,21 +18,9 @@ function typeOf(id) {
 
 // Tailwind removes the browser's default look from buttons and inputs, so
 // on this bare page we give them plain borders to tell them apart.
-const DEV_STYLES = `
-  .dev-page h1 { font-size: 22px; font-weight: bold; margin-bottom: 12px; }
-  .dev-page h2 { font-size: 16px; font-weight: bold; margin: 28px 0 10px; padding-top: 14px; border-top: 3px solid #000; }
-  .dev-page p { margin: 8px 0; }
-  .dev-page button { border: 2px solid #000; border-radius: 4px; padding: 3px 10px; background: #e8e8e8; cursor: pointer; }
-  .dev-page button:hover { background: #c8e0ff; }
-  .dev-page button:disabled { opacity: 0.4; cursor: not-allowed; }
-  .dev-page input, .dev-page select { border: 1px solid #555; border-radius: 3px; padding: 2px 6px; background: #fffbe6; }
-  .dev-page input[type=file] { background: none; border: 1px dashed #555; }
-  .dev-page a { color: #0645ad; text-decoration: underline; }
-  .dev-page ol { list-style: decimal; padding-left: 24px; }
-  .dev-page summary { cursor: pointer; text-decoration: underline; }
-`;
 
 export default function Dev() {
+  const colorMode = useColorMode(); // light or dark, shared by every page
   // useState gives back two things in a list: the current value, and a
   // function to change it. Calling a setter re-draws the page.
   const [catalog, setCatalog] = useState({ themes: [], sections: [] });
@@ -85,8 +76,9 @@ export default function Dev() {
   const src = '/api/dev/site/' + theme + '/index.html?sample=' + sample + '&sections=' + sectionList.join(',');
 
   return (
-    <div className="dev-page" style={{ background: '#fff', color: '#000', minHeight: '100vh', padding: 16, fontFamily: 'monospace' }}>
-      <style>{DEV_STYLES}</style>
+    <div className="dev-page app" data-mode={colorMode.mode}>
+      <SiteNav colorMode={colorMode} title="Dev" />
+      <div className="dev-body">
       <h1>ShipIt dev page</h1>
 
       <AiSettings />
@@ -143,10 +135,11 @@ export default function Dev() {
       <iframe
         title="site preview"
         src={src}
-        style={{ width: width, maxWidth: '100%', height: 760, border: '1px solid #000' }}
+        style={{ width: width, maxWidth: '100%', height: 760, border: '1px solid var(--e-line)' }}
       />
 
       <RunVersions />
+      </div>
     </div>
   );
 }
@@ -184,7 +177,7 @@ function RunVersions() {
           return (
             <div key={v.version}>
               <p>v{v.version}: <a href={v.previewUrl} target="_blank" rel="noreferrer">{v.previewUrl}</a></p>
-              <iframe title={'v' + v.version} src={v.previewUrl} style={{ width: 480, height: 360, border: '1px solid #000' }} />
+              <iframe title={'v' + v.version} src={v.previewUrl} style={{ width: 480, height: 360, border: '1px solid var(--e-line)' }} />
             </div>
           );
         }) : null}
@@ -239,7 +232,7 @@ function PhotoBuild() {
       {built ? (
         <div>
           <p>layout: {built.layout.theme} — {built.layout.sections.join(', ')} — <a href={built.previewUrl} target="_blank" rel="noreferrer">open</a></p>
-          <iframe title="built site" src={built.previewUrl} style={{ width: '100%', height: 600, border: '1px solid #000' }} />
+          <iframe title="built site" src={built.previewUrl} style={{ width: '100%', height: 600, border: '1px solid var(--e-line)' }} />
         </div>
       ) : null}
     </div>
